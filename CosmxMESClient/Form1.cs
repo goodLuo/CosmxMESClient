@@ -199,7 +199,7 @@ namespace CosmxMESClient {
                     AppendLog($"PLC连接成功并启动自动读取: {config.Name}");
 
                     // 测试连接
-                   // _=TestPLCConnectionAsync(config);
+                    // _=TestPLCConnectionAsync(config);
 
                     return true;
                     }
@@ -225,8 +225,7 @@ namespace CosmxMESClient {
                 config.HeartbeatInterval=30000; // 30秒
 
                 // 订阅心跳事件
-                config.PLCInstance.HeartbeatStatusChanged+=( sender,e ) =>
-                {
+                config.PLCInstance.HeartbeatStatusChanged+=( sender,e ) => {
                     OnPLCHeartbeatStatusChanged(sender,e,config);
                 };
                 }
@@ -417,8 +416,7 @@ namespace CosmxMESClient {
                 config.PLCInstance.DataRead+=OnPLCDataRead;
 
                 // 订阅心跳状态事件
-                config.PLCInstance.HeartbeatStatusChanged+=( sender,e ) =>
-                {
+                config.PLCInstance.HeartbeatStatusChanged+=( sender,e ) => {
                     OnPLCHeartbeatStatusChanged(sender,e,config);
                 };
 
@@ -464,10 +462,10 @@ namespace CosmxMESClient {
                         ProcessEquipmentStatus(value);
                         break;
                     case "D101": // 生产计数
-                   //     ProcessProductionCount(value);
+                                 //     ProcessProductionCount(value);
                         break;
                     case "D102": // 温度数据
-                     //   ProcessTemperatureData(value);
+                                 //   ProcessTemperatureData(value);
                         break;
                     default:
                         if (address.StartsWith("D")||address.StartsWith("M")) {
