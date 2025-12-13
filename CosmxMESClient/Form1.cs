@@ -199,7 +199,7 @@ namespace CosmxMESClient {
                     AppendLog($"PLC连接成功并启动自动读取: {config.Name}");
 
                     // 测试连接
-                    // _=TestPLCConnectionAsync(config);
+                     //_=TestPLCConnectionAsync(config);
 
                     return true;
                     }
