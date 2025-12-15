@@ -314,7 +314,6 @@ namespace CosmxMESClient {
         private void RefreshDataGridView( ) {
             dgvPLCConfigs.Refresh( );
             }
-
         private void btnAdd_Click( object sender,EventArgs e ) {
             try {
                 // 生成唯一名称
@@ -435,7 +434,6 @@ namespace CosmxMESClient {
             PLCConfigManager.SaveConfigs(_plcConfigs.ToList( ));
             MessageBox.Show("配置已保存");
             }
-
         private void btnConfigScanAddresses_Click( object sender,EventArgs e ) {
             if (_currentConfig==null)
                 return;
@@ -446,7 +444,6 @@ namespace CosmxMESClient {
                     }
                 }
             }
-
         private void btnConfigSendAddresses_Click( object sender,EventArgs e ) {
             if (_currentConfig==null)
                 return;
@@ -457,7 +454,6 @@ namespace CosmxMESClient {
                     }
                 }
             }
-
         private void btnStartAutoRead_Click( object sender,EventArgs e ) {
             if (_currentConfig==null) {
                 MessageBox.Show("请先选择PLC配置","提示",
@@ -483,7 +479,6 @@ namespace CosmxMESClient {
                     MessageBoxButtons.OK,MessageBoxIcon.Error);
                 }
             }
-
         private void btnStopAutoRead_Click( object sender,EventArgs e ) {
             if (_currentConfig==null)
                 return;
@@ -591,7 +586,6 @@ namespace CosmxMESClient {
                 RefreshAddressLists( );
                 }
             }
-
         private void RefreshAddressLists( ) {
             if (_currentConfig==null)
                 return;
@@ -689,7 +683,6 @@ namespace CosmxMESClient {
 
             grpSendAddresses.Text=$"发送地址配置 (总数: {_currentConfig.SendAddresses.Count}, 启用: {enabledCount}, 自动发送: {autoSendCount})";
             }
-
         private void btnDeleteScanAddress_Click( object sender,EventArgs e ) {
             if (lvScanAddresses.SelectedItems.Count==0)
                 return;
@@ -715,7 +708,6 @@ namespace CosmxMESClient {
                     }
                 }
             }
-
         private void btnTestConnection_Click( object sender,EventArgs e ) {
             if (!ValidateNumericValues( )) {
                 return;
@@ -731,7 +723,6 @@ namespace CosmxMESClient {
             else
                 MessageBox.Show("连接失败");
             }
-
         private void btnLoadConfigs_Click( object sender,EventArgs e ) {
             var configs = PLCConfigManager.LoadConfigs();
             _plcConfigs.Clear( );
@@ -763,11 +754,6 @@ namespace CosmxMESClient {
                     MessageBoxButtons.OK,MessageBoxIcon.Error);
                 }
             }
-
-
-
-
-
         private void DgvPLCConfigs_CellFormatting( object sender,DataGridViewCellFormattingEventArgs e ) {
             if (dgvPLCConfigs.Columns[e.ColumnIndex].Name=="colStatus"&&e.Value is bool) {
                 e.Value=(bool) e.Value ? "已连接" : "未连接";

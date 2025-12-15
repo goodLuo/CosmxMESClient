@@ -19,7 +19,14 @@ namespace CosmxMESClient {
         private int _connectRetryCount = 0;
         private const int MAX_RETRY_COUNT = 3;
         public event PropertyChangedEventHandler PropertyChanged;
-        private BindingList<PLCScanAddress> _scanAddresses = new BindingList<PLCScanAddress>();
+        public BindingList<PLCScanAddress> ScanAddresses { get; set; } = new BindingList<PLCScanAddress>( );
+        // 地址配置集合
+        // 使用可绑定的集合替代Dictionary
+        public BindingList<PLCSendAddress> SendAddresses { get; set; } = new BindingList<PLCSendAddress>( );
+
+        // 对外暴露BindingList
+        private Dictionary<string, PLCScanAddress> _scanAddressesDict = new Dictionary<string, PLCScanAddress>();
+        private Dictionary<string, PLCSendAddress> _sendAddressesDict = new Dictionary<string, PLCSendAddress>();
         private readonly object _addressLock = new object();
         // 添加连接状态变化事件
         public event EventHandler<ConnectionStatusChangedEventArgs> ConnectionStatusChanged;
@@ -33,26 +40,6 @@ namespace CosmxMESClient {
                 }
             public string Message {
                 get; set;
-                }
-            }
-        public BindingList<PLCScanAddress> ScanAddresses {
-            get {
-                return _scanAddresses;
-                }
-            private set {
-                _scanAddresses=value;
-                }
-            }
-        public PLCScanAddress this[string key] {
-            get {
-                lock (_addressLock) {
-                    return _scanAddresses.FirstOrDefault(a => a.Key==key);
-                    }
-                }
-            }
-        public bool ContainsKey( string key ) {
-            lock (_addressLock) {
-                return _scanAddresses.Any(a => a.Key==key);
                 }
             }
         private string _ipAddress;
@@ -203,13 +190,7 @@ namespace CosmxMESClient {
         public bool IsEnabled {
             get; set;
             }
-        // 地址配置集合
-        // 使用可绑定的集合替代Dictionary
-        public BindingList<PLCSendAddress> SendAddresses { get; set; } = new BindingList<PLCSendAddress>( );
 
-        // 对外暴露BindingList
-        private Dictionary<string, PLCScanAddress> _scanAddressesDict = new Dictionary<string, PLCScanAddress>();
-        private Dictionary<string, PLCSendAddress> _sendAddressesDict = new Dictionary<string, PLCSendAddress>();
 
 
         private void UpdatePLCInstanceProperty( string propertyName,object value ) {
@@ -260,13 +241,27 @@ namespace CosmxMESClient {
                     address.Key=GenerateAddressKey(address.Name,AddressDirection.ReadOnly);
                     }
 
-                if (ContainsKey(address.Key)) {
-                    throw new ArgumentException($"扫描地址键值已存在: {address.Key}");
+                if (_scanAddressesDict.ContainsKey(address.Key)) {
+                    throw new ArgumentException($"发送地址键值已存在: {address.Key}");
                     }
 
-                _scanAddresses.Add(address);
+                _scanAddressesDict[address.Key]=address;
+                ScanAddresses.Add(address); // 添加到可绑定集合
                 return true;
                 }
+            }
+        public bool AddSendAddress( PLCSendAddress address ) {
+            if (string.IsNullOrEmpty(address.Key)) {
+                address.Key=GenerateAddressKey(address.Name,AddressDirection.WriteOnly);
+                }
+
+            if (_sendAddressesDict.ContainsKey(address.Key)) {
+                throw new ArgumentException($"发送地址键值已存在: {address.Key}");
+                }
+
+            _sendAddressesDict[address.Key]=address;
+            SendAddresses.Add(address); // 添加到可绑定集合
+            return true;
             }
         public PLCConnectionConfig( ) {
             // 设置安全的默认值，避免数值范围错误
@@ -297,26 +292,17 @@ namespace CosmxMESClient {
         public override string ToString( ) {
             return $"{Name} ({IPAddress}:{Port})";
             }
-        public bool AddSendAddress( PLCSendAddress address ) {
-            if (string.IsNullOrEmpty(address.Key)) {
-                address.Key=GenerateAddressKey(address.Name,AddressDirection.WriteOnly);
-                }
 
-            if (_sendAddressesDict.ContainsKey(address.Key)) {
-                throw new ArgumentException($"发送地址键值已存在: {address.Key}");
-                }
-
-            _sendAddressesDict[address.Key]=address;
-            SendAddresses.Add(address); // 添加到可绑定集合
-            return true;
-            }
 
 
         public bool RemoveScanAddress( string key ) {
             lock (_addressLock) {
-                var addressToRemove = _scanAddresses.FirstOrDefault(a => a.Key == key);
-                if (addressToRemove!=null) {
-                    return _scanAddresses.Remove(addressToRemove);
+                if (_scanAddressesDict.Remove(key)) {
+                    var addressToRemove = ScanAddresses.FirstOrDefault(a => a.Key == key);
+                    if (addressToRemove!=null) {
+                        ScanAddresses.Remove(addressToRemove);
+                        }
+                    return true;
                     }
                 return false;
                 }

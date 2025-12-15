@@ -26,6 +26,9 @@ namespace CosmxMESClient {
         private object _statusLock = new object();
         private System.Timers.Timer _statusRefreshTimer;
 
+        private readonly Dictionary<string, bool> _eventSubscriptions = new Dictionary<string, bool>();
+
+
         // 重连信息类
         private class PLCReconnectInfo {
             public PLCConnectionConfig Config {
@@ -120,19 +123,34 @@ namespace CosmxMESClient {
         private async Task InitializePLCManagerAsync( ) {
             try {
                 AppendLog("开始初始化PLC管理器...");
+
                 _plcAddressManager=PLCAddressManager.Instance;
                 InitializeStatusDisplay( );
+
+                // 先加载配置，但不立即启动
                 await LoadPLCConfigsAsync( );
+
+                // 延迟启动自动读取
+                await Task.Delay(3000);
+                await StartAllAutoReadsAsync( );
+
                 UpdateStatus("系统就绪",true);
                 AppendLog("PLC管理器初始化完成");
                 }
             catch (Exception ex) {
                 LoggingService.Error("PLC管理器初始化失败",ex);
                 UpdateStatus($"初始化失败: {ex.Message}",false);
-                ShowErrorDialog($"PLC管理器初始化失败: {ex.Message}");
                 }
             }
+        private async Task StartAllAutoReadsAsync( ) {
+            var configs = PLCConfigManager.LoadConfigs().Where(c => c.IsEnabled).ToList();
 
+            foreach (var config in configs) {
+                // 分批启动，避免同时连接过多PLC
+                await ConnectAndStartAutoReadAsync(config);
+                await Task.Delay(1000); // 每个PLC间隔1秒
+                }
+            }
         private async Task LoadPLCConfigsAsync( ) {
             try {
                 AppendLog("开始加载PLC配置...");
@@ -185,34 +203,54 @@ namespace CosmxMESClient {
             try {
                 UpdateStatusItem(config.Key,"连接中...",Color.Orange,0);
 
-                // 异步连接
+                // 先确保连接成功
                 bool success = await Task.Run(() => config.Connect());
-
-                if (success) {
-                    // 启动自动读取（核心功能保留）
-                    config.StartAutoRead( );
-
-                    // 订阅PLC事件
-                    SubscribeToPLCDataEvents(config);
-
-                    UpdateStatusItem(config.Key,"运行中",Color.Green,0);
-                    AppendLog($"PLC连接成功并启动自动读取: {config.Name}");
-
-                    // 测试连接
-                     //_=TestPLCConnectionAsync(config);
-
-                    return true;
-                    }
-                else {
-                    UpdateStatusItem(config.Key,"连接失败",Color.Red,0);
-                    AppendLog($"PLC连接失败: {config.Name}");
+                if (!success)
                     return false;
+
+                // 等待PLC完全初始化
+                await Task.Delay(1000);
+
+                // 先订阅事件，再启动自动读取
+                SubscribeToPLCDataEvents(config);
+
+                // 安全启动自动读取
+                await SafeStartAutoRead(config);
+
+                UpdateStatusItem(config.Key,"运行中",Color.Green,0);
+                AppendLog($"PLC自动读取启动成功: {config.Name}");
+                return true;
+                }
+            catch (Exception ex) {
+                LoggingService.Error($"PLC自动读取启动失败: {config.Name}",ex);
+                UpdateStatusItem(config.Key,"自动读取异常",Color.Red,0);
+                return false;
+                }
+            }
+
+        private async Task SafeStartAutoRead( PLCConnectionConfig config ) {
+            try {
+                // 检查PLC连接状态
+                if (config.PLCInstance==null||!config.PLCInstance.IsConnected) {
+                    throw new InvalidOperationException("PLC未连接");
+                    }
+
+                // 先停止可能的现有自动读取
+                config.StopAutoRead( );
+                await Task.Delay(500);
+
+                // 启动自动读取
+                config.StartAutoRead( );
+
+                // 验证自动读取是否真正启动
+                await Task.Delay(1000);
+                if (!IsAutoReadRunning(config)) {
+                    throw new Exception("自动读取未正常启动");
                     }
                 }
             catch (Exception ex) {
-                LoggingService.Error($"PLC连接异常: {config.Name}",ex);
-                UpdateStatusItem(config.Key,"连接异常",Color.Red,0);
-                return false;
+                LoggingService.Error($"安全启动自动读取失败: {config.Name}",ex);
+                throw;
                 }
             }
 
@@ -411,23 +449,103 @@ namespace CosmxMESClient {
 
         // 订阅PLC数据事件
         private void SubscribeToPLCDataEvents( PLCConnectionConfig config ) {
-            if (config.PLCInstance!=null) {
-                // 订阅数据读取事件（自动读取的核心）
+            if (config.PLCInstance==null)
+                return;
+
+            string key = config.Key;
+
+            // 避免重复订阅
+            if (_eventSubscriptions.ContainsKey(key)&&_eventSubscriptions[key]) {
+                UnsubscribeFromPLCDataEvents(config);
+                }
+
+            try {
+                // 订阅数据读取事件
+                config.PLCInstance.DataRead-=OnPLCDataRead; // 先取消
                 config.PLCInstance.DataRead+=OnPLCDataRead;
 
-                // 订阅心跳状态事件
-                config.PLCInstance.HeartbeatStatusChanged+=( sender,e ) => {
-                    OnPLCHeartbeatStatusChanged(sender,e,config);
-                };
+                // 订阅心跳事件
+             //   config.PLCInstance.HeartbeatStatusChanged-=OnHeartbeatStatusChanged;
+          //      config.PLCInstance.HeartbeatStatusChanged+=OnHeartbeatStatusChanged;
 
                 // 订阅写入完成事件
+                config.PLCInstance.DataWriteCompleted-=OnPLCDataWriteCompleted;
                 config.PLCInstance.DataWriteCompleted+=OnPLCDataWriteCompleted;
 
-                AppendLog($"已订阅PLC事件: {config.Name}");
+                _eventSubscriptions[key]=true;
+                AppendLog($"PLC事件订阅成功: {config.Name}");
+                }
+            catch (Exception ex) {
+                LoggingService.Error($"订阅PLC事件失败: {config.Name}",ex);
+                _eventSubscriptions[key]=false;
                 }
             }
+        private void UnsubscribeFromPLCDataEvents( PLCConnectionConfig config ) {
+            if (config.PLCInstance==null)
+                return;
 
+            try {
+                config.PLCInstance.DataRead-=OnPLCDataRead;
+            //    config.PLCInstance.HeartbeatStatusChanged-=OnHeartbeatStatusChanged;
+                config.PLCInstance.DataWriteCompleted-=OnPLCDataWriteCompleted;
 
+                string key = config.Key;
+                if (_eventSubscriptions.ContainsKey(key)) {
+                    _eventSubscriptions[key]=false;
+                    }
+                }
+            catch (Exception ex) {
+                LoggingService.Error($"取消订阅PLC事件失败: {config.Name}",ex);
+                }
+            }
+        private bool IsAutoReadRunning( PLCConnectionConfig config ) {
+            try {
+                if (config.PLCInstance==null)
+                    return false;
+
+                // 检查自动读取键值是否存在（通过反射或接口方法）
+                var keys = config.PLCInstance.GetAutoReadKeys();
+                return keys!=null&&keys.Count>0;
+                }
+            catch {
+                return false;
+                }
+            }
+        // 添加自动读取监控定时器
+        private void InitializeAutoReadMonitor( ) {
+            var monitorTimer = new System.Timers.Timer(30000); // 30秒检查一次
+            monitorTimer.Elapsed+=async ( s,e ) => await CheckAutoReadStatusAsync( );
+            monitorTimer.Start( );
+            }
+        private async Task CheckAutoReadStatusAsync( ) {
+            var configs = PLCConfigManager.LoadConfigs().Where(c => c.IsEnabled).ToList();
+
+            foreach (var config in configs) {
+                if (config.IsConnected&&!IsAutoReadRunning(config)) {
+                    AppendLog($"检测到自动读取停止，尝试重启: {config.Name}");
+                    await SafeRestartAutoRead(config);
+                    }
+                }
+            }
+        private async Task SafeRestartAutoRead( PLCConnectionConfig config ) {
+            try {
+                config.StopAutoRead( );
+                await Task.Delay(2000);
+
+                // 重新连接
+                if (!config.IsConnected) {
+                    bool reconnected = await Task.Run(() => config.Connect());
+                    if (!reconnected)
+                        return;
+                    }
+
+                await SafeStartAutoRead(config);
+                AppendLog($"自动读取重启成功: {config.Name}");
+                }
+            catch (Exception ex) {
+                LoggingService.Error($"重启自动读取失败: {config.Name}",ex);
+                }
+            }
         // PLC数据读取事件处理（自动读取的核心）
         private void OnPLCDataRead( object sender,DataReadEventArgs e ) {
             if (this.InvokeRequired) {
