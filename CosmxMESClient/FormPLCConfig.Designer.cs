@@ -16,27 +16,15 @@ namespace CosmxMESClient {
 
         private void InitializeComponent( ) {
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
             this.tabControl = new System.Windows.Forms.TabControl();
             this.tabPageAddresses = new System.Windows.Forms.TabPage();
             this.splitContainerAddresses = new System.Windows.Forms.SplitContainer();
             this.grpScanAddresses = new System.Windows.Forms.GroupBox();
-            this.lvScanAddresses = new System.Windows.Forms.ListView();
-            this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader5 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.grpSendAddresses = new System.Windows.Forms.GroupBox();
-            this.lvSendAddresses = new System.Windows.Forms.ListView();
-            this.columnHeader6 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader7 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader8 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader9 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader10 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader11 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader12 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader13 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader14 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.grpAddressManagement = new System.Windows.Forms.GroupBox();
             this.btnConfigScanAddresses = new System.Windows.Forms.Button();
             this.btnConfigSendAddresses = new System.Windows.Forms.Button();
@@ -84,6 +72,8 @@ namespace CosmxMESClient {
             this.btnLoadConfigs = new System.Windows.Forms.Button();
             this.btnSaveAll = new System.Windows.Forms.Button();
             this.btnClose = new System.Windows.Forms.Button();
+            this.dgvScanAddresses = new System.Windows.Forms.DataGridView();
+            this.dgvSendAddresses = new System.Windows.Forms.DataGridView();
             this.tabControl.SuspendLayout();
             this.tabPageAddresses.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerAddresses)).BeginInit();
@@ -108,6 +98,8 @@ namespace CosmxMESClient {
             ((System.ComponentModel.ISupportInitialize)(this.numTimeout)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numHeartbeatInterval)).BeginInit();
             this.grpFileActions.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvScanAddresses)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvSendAddresses)).BeginInit();
             this.SuspendLayout();
             // 
             // tabControl
@@ -118,7 +110,7 @@ namespace CosmxMESClient {
             this.tabControl.Location = new System.Drawing.Point(0, 0);
             this.tabControl.Name = "tabControl";
             this.tabControl.SelectedIndex = 0;
-            this.tabControl.Size = new System.Drawing.Size(1838, 710);
+            this.tabControl.Size = new System.Drawing.Size(1244, 751);
             this.tabControl.TabIndex = 0;
             // 
             // tabPageAddresses
@@ -127,7 +119,7 @@ namespace CosmxMESClient {
             this.tabPageAddresses.Controls.Add(this.grpAddressManagement);
             this.tabPageAddresses.Location = new System.Drawing.Point(4, 33);
             this.tabPageAddresses.Name = "tabPageAddresses";
-            this.tabPageAddresses.Size = new System.Drawing.Size(1830, 673);
+            this.tabPageAddresses.Size = new System.Drawing.Size(1236, 714);
             this.tabPageAddresses.TabIndex = 0;
             this.tabPageAddresses.Text = "地址管理";
             // 
@@ -145,142 +137,31 @@ namespace CosmxMESClient {
             // splitContainerAddresses.Panel2
             // 
             this.splitContainerAddresses.Panel2.Controls.Add(this.grpSendAddresses);
-            this.splitContainerAddresses.Size = new System.Drawing.Size(1830, 593);
-            this.splitContainerAddresses.SplitterDistance = 297;
+            this.splitContainerAddresses.Size = new System.Drawing.Size(1236, 634);
+            this.splitContainerAddresses.SplitterDistance = 317;
             this.splitContainerAddresses.TabIndex = 0;
             // 
             // grpScanAddresses
             // 
-            this.grpScanAddresses.Controls.Add(this.lvScanAddresses);
+            this.grpScanAddresses.Controls.Add(this.dgvScanAddresses);
             this.grpScanAddresses.Dock = System.Windows.Forms.DockStyle.Fill;
             this.grpScanAddresses.Location = new System.Drawing.Point(0, 0);
             this.grpScanAddresses.Name = "grpScanAddresses";
-            this.grpScanAddresses.Size = new System.Drawing.Size(1830, 297);
+            this.grpScanAddresses.Size = new System.Drawing.Size(1236, 317);
             this.grpScanAddresses.TabIndex = 0;
             this.grpScanAddresses.TabStop = false;
             this.grpScanAddresses.Text = "扫描地址配置";
             // 
-            // lvScanAddresses
-            // 
-            this.lvScanAddresses.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeader1,
-            this.columnHeader2,
-            this.columnHeader3,
-            this.columnHeader4,
-            this.columnHeader5});
-            this.lvScanAddresses.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lvScanAddresses.FullRowSelect = true;
-            this.lvScanAddresses.GridLines = true;
-            this.lvScanAddresses.HideSelection = false;
-            this.lvScanAddresses.Location = new System.Drawing.Point(3, 26);
-            this.lvScanAddresses.Name = "lvScanAddresses";
-            this.lvScanAddresses.Size = new System.Drawing.Size(1824, 268);
-            this.lvScanAddresses.TabIndex = 1;
-            this.lvScanAddresses.UseCompatibleStateImageBehavior = false;
-            this.lvScanAddresses.View = System.Windows.Forms.View.Details;
-            // 
-            // columnHeader1
-            // 
-            this.columnHeader1.Text = "地址";
-            this.columnHeader1.Width = 120;
-            // 
-            // columnHeader2
-            // 
-            this.columnHeader2.Text = "数据类型";
-            this.columnHeader2.Width = 100;
-            // 
-            // columnHeader3
-            // 
-            this.columnHeader3.Text = "描述";
-            this.columnHeader3.Width = 200;
-            // 
-            // columnHeader4
-            // 
-            this.columnHeader4.Text = "扫描间隔(ms)";
-            this.columnHeader4.Width = 100;
-            // 
-            // columnHeader5
-            // 
-            this.columnHeader5.Text = "启用状态";
-            this.columnHeader5.Width = 80;
-            // 
             // grpSendAddresses
             // 
-            this.grpSendAddresses.Controls.Add(this.lvSendAddresses);
+            this.grpSendAddresses.Controls.Add(this.dgvSendAddresses);
             this.grpSendAddresses.Dock = System.Windows.Forms.DockStyle.Fill;
             this.grpSendAddresses.Location = new System.Drawing.Point(0, 0);
             this.grpSendAddresses.Name = "grpSendAddresses";
-            this.grpSendAddresses.Size = new System.Drawing.Size(1830, 292);
+            this.grpSendAddresses.Size = new System.Drawing.Size(1236, 313);
             this.grpSendAddresses.TabIndex = 0;
             this.grpSendAddresses.TabStop = false;
             this.grpSendAddresses.Text = "发送地址配置";
-            // 
-            // lvSendAddresses
-            // 
-            this.lvSendAddresses.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeader6,
-            this.columnHeader7,
-            this.columnHeader8,
-            this.columnHeader9,
-            this.columnHeader10,
-            this.columnHeader11,
-            this.columnHeader12,
-            this.columnHeader13,
-            this.columnHeader14});
-            this.lvSendAddresses.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lvSendAddresses.FullRowSelect = true;
-            this.lvSendAddresses.GridLines = true;
-            this.lvSendAddresses.HideSelection = false;
-            this.lvSendAddresses.Location = new System.Drawing.Point(3, 26);
-            this.lvSendAddresses.Name = "lvSendAddresses";
-            this.lvSendAddresses.Size = new System.Drawing.Size(1824, 263);
-            this.lvSendAddresses.TabIndex = 0;
-            this.lvSendAddresses.UseCompatibleStateImageBehavior = false;
-            this.lvSendAddresses.View = System.Windows.Forms.View.Details;
-            // 
-            // columnHeader6
-            // 
-            this.columnHeader6.Text = "键值";
-            this.columnHeader6.Width = 120;
-            // 
-            // columnHeader7
-            // 
-            this.columnHeader7.Text = "名称";
-            this.columnHeader7.Width = 120;
-            // 
-            // columnHeader8
-            // 
-            this.columnHeader8.Text = "地址";
-            this.columnHeader8.Width = 80;
-            // 
-            // columnHeader9
-            // 
-            this.columnHeader9.Text = "数据类型";
-            this.columnHeader9.Width = 80;
-            // 
-            // columnHeader10
-            // 
-            this.columnHeader10.Text = "描述";
-            this.columnHeader10.Width = 150;
-            // 
-            // columnHeader11
-            // 
-            this.columnHeader11.Text = "发送间隔(ms)";
-            this.columnHeader11.Width = 100;
-            // 
-            // columnHeader12
-            // 
-            this.columnHeader12.Text = "自动发送";
-            this.columnHeader12.Width = 80;
-            // 
-            // columnHeader13
-            // 
-            this.columnHeader13.Text = "发送延迟(ms)";
-            this.columnHeader13.Width = 100;
-            // 
-            // columnHeader14
-            // 
-            this.columnHeader14.Text = "状态";
             // 
             // grpAddressManagement
             // 
@@ -289,9 +170,9 @@ namespace CosmxMESClient {
             this.grpAddressManagement.Controls.Add(this.btnStartAutoRead);
             this.grpAddressManagement.Controls.Add(this.btnStopAutoRead);
             this.grpAddressManagement.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.grpAddressManagement.Location = new System.Drawing.Point(0, 593);
+            this.grpAddressManagement.Location = new System.Drawing.Point(0, 634);
             this.grpAddressManagement.Name = "grpAddressManagement";
-            this.grpAddressManagement.Size = new System.Drawing.Size(1830, 80);
+            this.grpAddressManagement.Size = new System.Drawing.Size(1236, 80);
             this.grpAddressManagement.TabIndex = 1;
             this.grpAddressManagement.TabStop = false;
             this.grpAddressManagement.Text = "地址管理操作";
@@ -342,7 +223,7 @@ namespace CosmxMESClient {
             this.tabPageConfig.Location = new System.Drawing.Point(4, 33);
             this.tabPageConfig.Name = "tabPageConfig";
             this.tabPageConfig.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageConfig.Size = new System.Drawing.Size(1830, 673);
+            this.tabPageConfig.Size = new System.Drawing.Size(1236, 714);
             this.tabPageConfig.TabIndex = 0;
             this.tabPageConfig.Text = "PLC连接配置";
             this.tabPageConfig.UseVisualStyleBackColor = true;
@@ -361,8 +242,8 @@ namespace CosmxMESClient {
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.grpConnection);
-            this.splitContainer1.Size = new System.Drawing.Size(1824, 667);
-            this.splitContainer1.SplitterDistance = 1300;
+            this.splitContainer1.Size = new System.Drawing.Size(1230, 708);
+            this.splitContainer1.SplitterDistance = 876;
             this.splitContainer1.TabIndex = 0;
             // 
             // grpPLCList
@@ -371,7 +252,7 @@ namespace CosmxMESClient {
             this.grpPLCList.Dock = System.Windows.Forms.DockStyle.Fill;
             this.grpPLCList.Location = new System.Drawing.Point(0, 0);
             this.grpPLCList.Name = "grpPLCList";
-            this.grpPLCList.Size = new System.Drawing.Size(1300, 592);
+            this.grpPLCList.Size = new System.Drawing.Size(876, 633);
             this.grpPLCList.TabIndex = 0;
             this.grpPLCList.TabStop = false;
             this.grpPLCList.Text = "PLC列表";
@@ -401,7 +282,7 @@ namespace CosmxMESClient {
             this.dgvPLCConfigs.RowsDefaultCellStyle = dataGridViewCellStyle5;
             this.dgvPLCConfigs.RowTemplate.Height = 25;
             this.dgvPLCConfigs.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvPLCConfigs.Size = new System.Drawing.Size(1294, 563);
+            this.dgvPLCConfigs.Size = new System.Drawing.Size(870, 604);
             this.dgvPLCConfigs.TabIndex = 0;
             this.dgvPLCConfigs.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.DgvPLCConfigs_CellFormatting);
             this.dgvPLCConfigs.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.DgvPLCConfigs_DataError);
@@ -455,9 +336,9 @@ namespace CosmxMESClient {
             this.grpActions.Controls.Add(this.btnDelete);
             this.grpActions.Controls.Add(this.btnAdd);
             this.grpActions.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.grpActions.Location = new System.Drawing.Point(0, 592);
+            this.grpActions.Location = new System.Drawing.Point(0, 633);
             this.grpActions.Name = "grpActions";
-            this.grpActions.Size = new System.Drawing.Size(1300, 75);
+            this.grpActions.Size = new System.Drawing.Size(876, 75);
             this.grpActions.TabIndex = 1;
             this.grpActions.TabStop = false;
             this.grpActions.Text = "操作";
@@ -512,7 +393,7 @@ namespace CosmxMESClient {
             this.grpConnection.Dock = System.Windows.Forms.DockStyle.Fill;
             this.grpConnection.Location = new System.Drawing.Point(0, 0);
             this.grpConnection.Name = "grpConnection";
-            this.grpConnection.Size = new System.Drawing.Size(520, 667);
+            this.grpConnection.Size = new System.Drawing.Size(350, 708);
             this.grpConnection.TabIndex = 0;
             this.grpConnection.TabStop = false;
             this.grpConnection.Text = "连接配置";
@@ -557,7 +438,7 @@ namespace CosmxMESClient {
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(514, 638);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(344, 679);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
             // lblName
@@ -576,14 +457,14 @@ namespace CosmxMESClient {
             this.txtName.Dock = System.Windows.Forms.DockStyle.Fill;
             this.txtName.Location = new System.Drawing.Point(123, 3);
             this.txtName.Name = "txtName";
-            this.txtName.Size = new System.Drawing.Size(131, 30);
+            this.txtName.Size = new System.Drawing.Size(46, 30);
             this.txtName.TabIndex = 1;
             // 
             // lblPLCType
             // 
             this.lblPLCType.AutoSize = true;
             this.lblPLCType.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblPLCType.Location = new System.Drawing.Point(260, 0);
+            this.lblPLCType.Location = new System.Drawing.Point(175, 0);
             this.lblPLCType.Name = "lblPLCType";
             this.lblPLCType.Size = new System.Drawing.Size(114, 40);
             this.lblPLCType.TabIndex = 2;
@@ -595,9 +476,9 @@ namespace CosmxMESClient {
             this.cmbPLCType.Dock = System.Windows.Forms.DockStyle.Fill;
             this.cmbPLCType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbPLCType.FormattingEnabled = true;
-            this.cmbPLCType.Location = new System.Drawing.Point(380, 3);
+            this.cmbPLCType.Location = new System.Drawing.Point(295, 3);
             this.cmbPLCType.Name = "cmbPLCType";
-            this.cmbPLCType.Size = new System.Drawing.Size(131, 32);
+            this.cmbPLCType.Size = new System.Drawing.Size(46, 32);
             this.cmbPLCType.TabIndex = 3;
             // 
             // lblIPAddress
@@ -616,14 +497,14 @@ namespace CosmxMESClient {
             this.txtIPAddress.Dock = System.Windows.Forms.DockStyle.Fill;
             this.txtIPAddress.Location = new System.Drawing.Point(123, 43);
             this.txtIPAddress.Name = "txtIPAddress";
-            this.txtIPAddress.Size = new System.Drawing.Size(131, 30);
+            this.txtIPAddress.Size = new System.Drawing.Size(46, 30);
             this.txtIPAddress.TabIndex = 5;
             // 
             // lblPort
             // 
             this.lblPort.AutoSize = true;
             this.lblPort.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblPort.Location = new System.Drawing.Point(260, 40);
+            this.lblPort.Location = new System.Drawing.Point(175, 40);
             this.lblPort.Name = "lblPort";
             this.lblPort.Size = new System.Drawing.Size(114, 40);
             this.lblPort.TabIndex = 6;
@@ -633,7 +514,7 @@ namespace CosmxMESClient {
             // numPort
             // 
             this.numPort.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.numPort.Location = new System.Drawing.Point(380, 43);
+            this.numPort.Location = new System.Drawing.Point(295, 43);
             this.numPort.Maximum = new decimal(new int[] {
             65535,
             0,
@@ -645,7 +526,7 @@ namespace CosmxMESClient {
             0,
             0});
             this.numPort.Name = "numPort";
-            this.numPort.Size = new System.Drawing.Size(131, 30);
+            this.numPort.Size = new System.Drawing.Size(46, 30);
             this.numPort.TabIndex = 7;
             this.numPort.Value = new decimal(new int[] {
             502,
@@ -679,7 +560,7 @@ namespace CosmxMESClient {
             0,
             0});
             this.numSlaveID.Name = "numSlaveID";
-            this.numSlaveID.Size = new System.Drawing.Size(131, 30);
+            this.numSlaveID.Size = new System.Drawing.Size(46, 30);
             this.numSlaveID.TabIndex = 9;
             this.numSlaveID.Value = new decimal(new int[] {
             1,
@@ -691,7 +572,7 @@ namespace CosmxMESClient {
             // 
             this.lblTimeout.AutoSize = true;
             this.lblTimeout.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblTimeout.Location = new System.Drawing.Point(260, 80);
+            this.lblTimeout.Location = new System.Drawing.Point(175, 80);
             this.lblTimeout.Name = "lblTimeout";
             this.lblTimeout.Size = new System.Drawing.Size(114, 40);
             this.lblTimeout.TabIndex = 10;
@@ -706,7 +587,7 @@ namespace CosmxMESClient {
             0,
             0,
             0});
-            this.numTimeout.Location = new System.Drawing.Point(380, 83);
+            this.numTimeout.Location = new System.Drawing.Point(295, 83);
             this.numTimeout.Maximum = new decimal(new int[] {
             30000,
             0,
@@ -718,7 +599,7 @@ namespace CosmxMESClient {
             0,
             0});
             this.numTimeout.Name = "numTimeout";
-            this.numTimeout.Size = new System.Drawing.Size(131, 30);
+            this.numTimeout.Size = new System.Drawing.Size(46, 30);
             this.numTimeout.TabIndex = 11;
             this.numTimeout.Value = new decimal(new int[] {
             1000,
@@ -744,14 +625,14 @@ namespace CosmxMESClient {
             this.cmbByteOrder.FormattingEnabled = true;
             this.cmbByteOrder.Location = new System.Drawing.Point(123, 123);
             this.cmbByteOrder.Name = "cmbByteOrder";
-            this.cmbByteOrder.Size = new System.Drawing.Size(131, 32);
+            this.cmbByteOrder.Size = new System.Drawing.Size(46, 32);
             this.cmbByteOrder.TabIndex = 13;
             // 
             // lblStringByteOrder
             // 
             this.lblStringByteOrder.AutoSize = true;
             this.lblStringByteOrder.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblStringByteOrder.Location = new System.Drawing.Point(260, 120);
+            this.lblStringByteOrder.Location = new System.Drawing.Point(175, 120);
             this.lblStringByteOrder.Name = "lblStringByteOrder";
             this.lblStringByteOrder.Size = new System.Drawing.Size(114, 40);
             this.lblStringByteOrder.TabIndex = 14;
@@ -763,9 +644,9 @@ namespace CosmxMESClient {
             this.cmbStringByteOrder.Dock = System.Windows.Forms.DockStyle.Fill;
             this.cmbStringByteOrder.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbStringByteOrder.FormattingEnabled = true;
-            this.cmbStringByteOrder.Location = new System.Drawing.Point(380, 123);
+            this.cmbStringByteOrder.Location = new System.Drawing.Point(295, 123);
             this.cmbStringByteOrder.Name = "cmbStringByteOrder";
-            this.cmbStringByteOrder.Size = new System.Drawing.Size(131, 32);
+            this.cmbStringByteOrder.Size = new System.Drawing.Size(46, 32);
             this.cmbStringByteOrder.TabIndex = 15;
             // 
             // chkHeartbeatEnabled
@@ -775,7 +656,7 @@ namespace CosmxMESClient {
             this.chkHeartbeatEnabled.Dock = System.Windows.Forms.DockStyle.Fill;
             this.chkHeartbeatEnabled.Location = new System.Drawing.Point(3, 163);
             this.chkHeartbeatEnabled.Name = "chkHeartbeatEnabled";
-            this.chkHeartbeatEnabled.Size = new System.Drawing.Size(251, 34);
+            this.chkHeartbeatEnabled.Size = new System.Drawing.Size(166, 34);
             this.chkHeartbeatEnabled.TabIndex = 16;
             this.chkHeartbeatEnabled.Text = "启用心跳检测";
             this.chkHeartbeatEnabled.UseVisualStyleBackColor = true;
@@ -784,7 +665,7 @@ namespace CosmxMESClient {
             // 
             this.lblHeartbeatInterval.AutoSize = true;
             this.lblHeartbeatInterval.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblHeartbeatInterval.Location = new System.Drawing.Point(260, 160);
+            this.lblHeartbeatInterval.Location = new System.Drawing.Point(175, 160);
             this.lblHeartbeatInterval.Name = "lblHeartbeatInterval";
             this.lblHeartbeatInterval.Size = new System.Drawing.Size(114, 40);
             this.lblHeartbeatInterval.TabIndex = 17;
@@ -799,7 +680,7 @@ namespace CosmxMESClient {
             0,
             0,
             0});
-            this.numHeartbeatInterval.Location = new System.Drawing.Point(380, 163);
+            this.numHeartbeatInterval.Location = new System.Drawing.Point(295, 163);
             this.numHeartbeatInterval.Maximum = new decimal(new int[] {
             60000,
             0,
@@ -811,7 +692,7 @@ namespace CosmxMESClient {
             0,
             0});
             this.numHeartbeatInterval.Name = "numHeartbeatInterval";
-            this.numHeartbeatInterval.Size = new System.Drawing.Size(131, 30);
+            this.numHeartbeatInterval.Size = new System.Drawing.Size(46, 30);
             this.numHeartbeatInterval.TabIndex = 18;
             this.numHeartbeatInterval.Value = new decimal(new int[] {
             30000,
@@ -835,7 +716,7 @@ namespace CosmxMESClient {
             this.txtHeartbeatAddress.Dock = System.Windows.Forms.DockStyle.Fill;
             this.txtHeartbeatAddress.Location = new System.Drawing.Point(123, 203);
             this.txtHeartbeatAddress.Name = "txtHeartbeatAddress";
-            this.txtHeartbeatAddress.Size = new System.Drawing.Size(131, 30);
+            this.txtHeartbeatAddress.Size = new System.Drawing.Size(46, 30);
             this.txtHeartbeatAddress.TabIndex = 20;
             this.txtHeartbeatAddress.Text = "100";
             // 
@@ -843,7 +724,7 @@ namespace CosmxMESClient {
             // 
             this.chkEnabled.AutoSize = true;
             this.chkEnabled.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.chkEnabled.Location = new System.Drawing.Point(260, 203);
+            this.chkEnabled.Location = new System.Drawing.Point(175, 203);
             this.chkEnabled.Name = "chkEnabled";
             this.chkEnabled.Size = new System.Drawing.Size(114, 34);
             this.chkEnabled.TabIndex = 21;
@@ -856,9 +737,9 @@ namespace CosmxMESClient {
             this.grpFileActions.Controls.Add(this.btnSaveAll);
             this.grpFileActions.Controls.Add(this.btnClose);
             this.grpFileActions.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.grpFileActions.Location = new System.Drawing.Point(0, 710);
+            this.grpFileActions.Location = new System.Drawing.Point(0, 751);
             this.grpFileActions.Name = "grpFileActions";
-            this.grpFileActions.Size = new System.Drawing.Size(1838, 60);
+            this.grpFileActions.Size = new System.Drawing.Size(1244, 60);
             this.grpFileActions.TabIndex = 1;
             this.grpFileActions.TabStop = false;
             this.grpFileActions.Text = "文件操作";
@@ -896,11 +777,69 @@ namespace CosmxMESClient {
             this.btnClose.UseVisualStyleBackColor = false;
             this.btnClose.Click += new System.EventHandler(this.btnClose_Click);
             // 
+            // dgvScanAddresses
+            // 
+            this.dgvScanAddresses.AllowUserToAddRows = false;
+            this.dgvScanAddresses.AllowUserToDeleteRows = false;
+            this.dgvScanAddresses.AllowUserToResizeRows = false;
+            dataGridViewCellStyle1.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.dgvScanAddresses.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
+            this.dgvScanAddresses.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.dgvScanAddresses.BackgroundColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = System.Drawing.Color.LightGreen;
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft YaHei UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgvScanAddresses.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
+            this.dgvScanAddresses.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvScanAddresses.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dgvScanAddresses.EnableHeadersVisualStyles = false;
+            this.dgvScanAddresses.Location = new System.Drawing.Point(3, 26);
+            this.dgvScanAddresses.MultiSelect = false;
+            this.dgvScanAddresses.Name = "dgvScanAddresses";
+            this.dgvScanAddresses.RowHeadersVisible = false;
+            this.dgvScanAddresses.RowHeadersWidth = 62;
+            this.dgvScanAddresses.RowTemplate.Height = 30;
+            this.dgvScanAddresses.Size = new System.Drawing.Size(1230, 288);
+            this.dgvScanAddresses.TabIndex = 0;
+            // 
+            // dgvSendAddresses
+            // 
+            this.dgvSendAddresses.AllowUserToAddRows = false;
+            this.dgvSendAddresses.AllowUserToDeleteRows = false;
+            this.dgvSendAddresses.AllowUserToResizeRows = false;
+            dataGridViewCellStyle3.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.dgvSendAddresses.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle3;
+            this.dgvSendAddresses.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.dgvSendAddresses.BackgroundColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle4.BackColor = System.Drawing.Color.LightGreen;
+            dataGridViewCellStyle4.Font = new System.Drawing.Font("Microsoft YaHei UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            dataGridViewCellStyle4.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle4.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle4.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgvSendAddresses.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle4;
+            this.dgvSendAddresses.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvSendAddresses.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dgvSendAddresses.EnableHeadersVisualStyles = false;
+            this.dgvSendAddresses.Location = new System.Drawing.Point(3, 26);
+            this.dgvSendAddresses.MultiSelect = false;
+            this.dgvSendAddresses.Name = "dgvSendAddresses";
+            this.dgvSendAddresses.RowHeadersVisible = false;
+            this.dgvSendAddresses.RowHeadersWidth = 62;
+            this.dgvSendAddresses.RowTemplate.Height = 30;
+            this.dgvSendAddresses.Size = new System.Drawing.Size(1230, 284);
+            this.dgvSendAddresses.TabIndex = 1;
+            // 
             // FormPLCConfig
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 24F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1838, 770);
+            this.ClientSize = new System.Drawing.Size(1244, 811);
             this.Controls.Add(this.tabControl);
             this.Controls.Add(this.grpFileActions);
             this.Font = new System.Drawing.Font("Microsoft YaHei UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
@@ -934,6 +873,8 @@ namespace CosmxMESClient {
             ((System.ComponentModel.ISupportInitialize)(this.numTimeout)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numHeartbeatInterval)).EndInit();
             this.grpFileActions.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.dgvScanAddresses)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvSendAddresses)).EndInit();
             this.ResumeLayout(false);
 
             }
@@ -988,7 +929,6 @@ namespace CosmxMESClient {
         private SplitContainer splitContainerAddresses;
         private GroupBox grpScanAddresses;
         private GroupBox grpSendAddresses;
-        private ListView lvSendAddresses;
         private GroupBox grpAddressManagement;
         private Button btnConfigScanAddresses;
         private Button btnConfigSendAddresses;
@@ -996,20 +936,7 @@ namespace CosmxMESClient {
         private Button btnExportAddresses;
         private Button btnStartAutoRead;
         private Button btnStopAutoRead;
-        private ListView lvScanAddresses;
-        private ColumnHeader columnHeader1;
-        private ColumnHeader columnHeader2;
-        private ColumnHeader columnHeader3;
-        private ColumnHeader columnHeader4;
-        private ColumnHeader columnHeader5;
-        private ColumnHeader columnHeader6;
-        private ColumnHeader columnHeader7;
-        private ColumnHeader columnHeader8;
-        private ColumnHeader columnHeader9;
-        private ColumnHeader columnHeader10;
-        private ColumnHeader columnHeader11;
-        private ColumnHeader columnHeader12;
-        private ColumnHeader columnHeader13;
-        private ColumnHeader columnHeader14;
+        private DataGridView dgvScanAddresses;
+        private DataGridView dgvSendAddresses;
         }
     }

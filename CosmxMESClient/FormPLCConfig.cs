@@ -48,6 +48,10 @@ namespace CosmxMESClient {
                 }
             // 设置控件数据绑定
             SetupDataBindings( );
+            // 初始化地址列表的绑定源
+            _scanAddressesBindingSource.DataSource=typeof(BindingList<PLCScanAddress>);
+            _sendAddressesBindingSource.DataSource=typeof(BindingList<PLCSendAddress>);
+
 
             // 初始化下拉框
             cmbPLCType.DataSource=Enum.GetValues(typeof(PLCType));
@@ -59,33 +63,84 @@ namespace CosmxMESClient {
             _scanAddressesBindingSource.DataSource=typeof(BindingList<PLCScanAddress>);
             _sendAddressesBindingSource.DataSource=typeof(BindingList<PLCSendAddress>);
 
-            // 设置ListView的数据绑定
-            SetupListViewDataBindings( );
+            // 设置数据绑定
+            SetupDataGridViewDataBindings( );
 
             }
-        private void SetupListViewDataBindings( ) {
-            // 清除现有列
-            lvScanAddresses.Columns.Clear( );
-            lvSendAddresses.Columns.Clear( );
+        private void SetupDataGridViewDataBindings( ) {
+            // 扫描地址DataGridView的数据绑定
+            dgvScanAddresses.DataSource=_scanAddressesBindingSource;
 
-            // 配置扫描地址列表的列
-            lvScanAddresses.Columns.Add("地址",120);
-            lvScanAddresses.Columns.Add("数据类型",100);
-            lvScanAddresses.Columns.Add("描述",200);
-            lvScanAddresses.Columns.Add("扫描间隔(ms)",100);
-            lvScanAddresses.Columns.Add("启用状态",80);
-            lvScanAddresses.Columns.Add("IP地址",120);
-            lvScanAddresses.Columns.Add("端口号",80);
+            // 发送地址DataGridView的数据绑定
+            dgvSendAddresses.DataSource=_sendAddressesBindingSource;
 
-            // 配置发送地址列表的列
-            lvSendAddresses.Columns.Add("地址",120);
-            lvSendAddresses.Columns.Add("数据类型",100);
-            lvSendAddresses.Columns.Add("描述",200);
-            lvSendAddresses.Columns.Add("发送间隔(ms)",100);
-            lvSendAddresses.Columns.Add("自动发送",80);
-            lvSendAddresses.Columns.Add("启用状态",80);
-            lvSendAddresses.Columns.Add("IP地址",120);
-            lvSendAddresses.Columns.Add("端口号",80);
+            // 设置单元格格式化
+            dgvScanAddresses.CellFormatting+=DgvAddresses_CellFormatting;
+            dgvSendAddresses.CellFormatting+=DgvAddresses_CellFormatting;
+
+            // 添加行预处理事件
+            dgvScanAddresses.RowPrePaint+=DgvScanAddresses_RowPrePaint;
+            dgvSendAddresses.RowPrePaint+=DgvSendAddresses_RowPrePaint;
+            }
+        private void DgvAddresses_CellFormatting( object sender,DataGridViewCellFormattingEventArgs e ) {
+            var dataGridView = sender as DataGridView;
+            if (dataGridView==null)
+                return;
+
+            var row = dataGridView.Rows[e.RowIndex];
+            var addressConfig = row.DataBoundItem as PLCAddressConfig;
+            if (addressConfig==null)
+                return;
+
+            // 处理数据类型列的显示
+            if (dataGridView.Columns[e.ColumnIndex].Name=="colScanDataType"||
+                dataGridView.Columns[e.ColumnIndex].Name=="colSendDataType") {
+                e.Value=PLCAddressConfig.GetDataTypeDisplayName(addressConfig.DataType);
+                e.FormattingApplied=true;
+                }
+
+            // 处理启用状态列的显示
+            if (dataGridView.Columns[e.ColumnIndex].Name=="colScanEnabled"||
+                dataGridView.Columns[e.ColumnIndex].Name=="colSendEnabled") {
+                e.Value=addressConfig.IsEnabled ? "启用" : "禁用";
+                e.FormattingApplied=true;
+                }
+            }
+
+        private void DgvScanAddresses_RowPrePaint( object sender,DataGridViewRowPrePaintEventArgs e ) {
+            var row = dgvScanAddresses.Rows[e.RowIndex];
+            var address = row.DataBoundItem as PLCScanAddress;
+            if (address==null)
+                return;
+
+            // 设置行颜色
+            if (!address.IsEnabled) {
+                row.DefaultCellStyle.BackColor=Color.LightGray;
+                }
+            else if (address.ReadInterval<500) {
+                row.DefaultCellStyle.BackColor=Color.LightCyan;
+                }
+            else {
+                row.DefaultCellStyle.BackColor=Color.White;
+                }
+            }
+
+        private void DgvSendAddresses_RowPrePaint( object sender,DataGridViewRowPrePaintEventArgs e ) {
+            var row = dgvSendAddresses.Rows[e.RowIndex];
+            var address = row.DataBoundItem as PLCSendAddress;
+            if (address==null)
+                return;
+
+            // 设置行颜色
+            if (!address.IsEnabled) {
+                row.DefaultCellStyle.BackColor=Color.LightGray;
+                }
+            else if (address.AutoSend) {
+                row.DefaultCellStyle.BackColor=Color.LightYellow;
+                }
+            else {
+                row.DefaultCellStyle.BackColor=Color.White;
+                }
             }
         private void SetupDataBindings( ) {
             // 清除现有绑定
@@ -213,8 +268,8 @@ namespace CosmxMESClient {
             txtHeartbeatAddress.Text=config.HeartbeatAddress;
             chkEnabled.Checked=config.IsEnabled;
 
-           // LoadScanAddresses(config.ScanAddresses.Values.ToList( ));
-           // LoadSendAddresses(config.SendAddresses.Values.ToList());
+            // LoadScanAddresses(config.ScanAddresses.Values.ToList( ));
+            // LoadSendAddresses(config.SendAddresses.Values.ToList());
             }
         private void btnAdd_Click( object sender,EventArgs e ) {
             try {
@@ -492,54 +547,68 @@ namespace CosmxMESClient {
             if (_currentConfig==null)
                 return;
 
-            // 清空现有项
-            lvScanAddresses.Items.Clear( );
-            lvSendAddresses.Items.Clear( );
+            // 创建用于显示的包装类列表
+            var scanDisplayList = _currentConfig.ScanAddresses.Select(addr => new ScanAddressDisplayWrapper(addr, _currentConfig)).ToList();
+            var sendDisplayList = _currentConfig.SendAddresses.Select(addr => new SendAddressDisplayWrapper(addr, _currentConfig)).ToList();
 
-            // 绑定扫描地址
-            _scanAddressesBindingSource.DataSource=_currentConfig.ScanAddresses;
-            foreach (var address in _currentConfig.ScanAddresses) {
-                var item = new ListViewItem(address.Address);
-                item.SubItems.Add(PLCAddressConfig.GetDataTypeDisplayName(address.DataType));
-                item.SubItems.Add(address.Description);
-                item.SubItems.Add(address.ReadInterval.ToString( ));
-                item.SubItems.Add(address.IsEnabled ? "启用" : "禁用");
-                item.SubItems.Add(_currentConfig.IPAddress);
-                item.SubItems.Add(_currentConfig.Port.ToString());
-                item.Tag=address; // 保存对象引用
-
-                // 设置行颜色
-                if (!address.IsEnabled)
-                    item.BackColor=Color.LightGray;
-                else if (address.ReadInterval<500)
-                    item.BackColor=Color.LightCyan;
-
-                lvScanAddresses.Items.Add(item);
-                }
-
-            // 绑定发送地址
-            _sendAddressesBindingSource.DataSource=_currentConfig.SendAddresses;
-            foreach (var address in _currentConfig.SendAddresses) {
-                var item = new ListViewItem(address.Address);
-                item.SubItems.Add(PLCAddressConfig.GetDataTypeDisplayName(address.DataType));
-                item.SubItems.Add(address.Description);
-                item.SubItems.Add(address.ReadInterval.ToString( ));
-                item.SubItems.Add(address.AutoSend ? "是" : "否");
-                item.SubItems.Add(address.IsEnabled ? "启用" : "禁用");
-                item.SubItems.Add(_currentConfig.IPAddress);
-                item.SubItems.Add(_currentConfig.Port.ToString( ));
-                item.Tag=address; // 保存对象引用
-
-                // 设置行颜色
-                if (!address.IsEnabled)
-                    item.BackColor=Color.LightGray;
-                else if (address.AutoSend)
-                    item.BackColor=Color.LightYellow;
-
-                lvSendAddresses.Items.Add(item);
-                }
+            // 绑定到数据源
+            _scanAddressesBindingSource.DataSource=new BindingList<ScanAddressDisplayWrapper>(scanDisplayList);
+            _sendAddressesBindingSource.DataSource=new BindingList<SendAddressDisplayWrapper>(sendDisplayList);
 
             UpdateAddressesSummary( );
+            }
+        // 地址显示包装类
+        // 扫描地址显示包装类（只包含扫描地址的属性）
+        private class ScanAddressDisplayWrapper {
+            private readonly PLCScanAddress _address;
+            private readonly PLCConnectionConfig _config;
+
+            public ScanAddressDisplayWrapper( PLCScanAddress address,PLCConnectionConfig config ) {
+                _address=address;
+                _config=config;
+                }
+            // 扫描地址属性
+            [DisplayName("地址")]
+            public string Address => _address.Address;
+            [DisplayName("数据类型")]
+            public string DataTypeDisplay => PLCAddressConfig.GetDataTypeDisplayName(_address.DataType);
+            [DisplayName("描述")]
+            public string Description => _address.Description;
+            [DisplayName("扫描间隔")]
+            public int ReadInterval => _address.ReadInterval;
+            [DisplayName("启用状态")]
+            public bool IsEnabled => _address.IsEnabled;
+            [DisplayName("IP地址")]
+            public string IPAddress => _config.IPAddress;
+            [DisplayName("端口号")]
+            public int Port => _config.Port;
+            }
+
+        // 发送地址显示包装类（包含发送地址特有属性）
+        private class SendAddressDisplayWrapper {
+            private readonly PLCSendAddress _address;
+            private readonly PLCConnectionConfig _config;
+
+            public SendAddressDisplayWrapper( PLCSendAddress address,PLCConnectionConfig config ) {
+                _address=address;
+                _config=config;
+                }
+
+            // 公共属性
+            [DisplayName("地址")]
+            public string Address => _address.Address;
+            [DisplayName("数据类型")]
+            public string DataTypeDisplay => PLCAddressConfig.GetDataTypeDisplayName(_address.DataType);
+            [DisplayName("描述")]
+            public string Description => _address.Description;
+            [DisplayName("发送间隔")]
+            public int ReadInterval => _address.ReadInterval;
+            [DisplayName("启用状态")]
+            public bool IsEnabled => _address.IsEnabled;
+            [DisplayName("IP地址")]
+            public string IPAddress => _config.IPAddress;
+            [DisplayName("端口号")]
+            public int Port => _config.Port;
             }
         private void UpdateAddressesSummary( ) {
             if (_currentConfig==null)
@@ -667,7 +736,6 @@ namespace CosmxMESClient {
             numHeartbeatInterval.Value=30000;
             txtHeartbeatAddress.Text="100";
             chkEnabled.Checked=true;
-            lvScanAddresses.Items.Clear( );
             }
         }
     public enum PLCType {
