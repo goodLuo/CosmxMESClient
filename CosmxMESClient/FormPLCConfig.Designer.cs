@@ -15,7 +15,7 @@ namespace CosmxMESClient {
         #region Windows Form Designer generated code
 
         private void InitializeComponent( ) {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             this.tabControl = new System.Windows.Forms.TabControl();
             this.tabPageAddresses = new System.Windows.Forms.TabPage();
             this.splitContainerAddresses = new System.Windows.Forms.SplitContainer();
@@ -300,7 +300,7 @@ namespace CosmxMESClient {
             // 
             this.btnConfigScanAddresses.Location = new System.Drawing.Point(20, 29);
             this.btnConfigScanAddresses.Name = "btnConfigScanAddresses";
-            this.btnConfigScanAddresses.Size = new System.Drawing.Size(140, 30);
+            this.btnConfigScanAddresses.Size = new System.Drawing.Size(140, 45);
             this.btnConfigScanAddresses.TabIndex = 0;
             this.btnConfigScanAddresses.Text = "配置扫描地址";
             this.btnConfigScanAddresses.Click += new System.EventHandler(this.btnConfigScanAddresses_Click);
@@ -309,7 +309,7 @@ namespace CosmxMESClient {
             // 
             this.btnConfigSendAddresses.Location = new System.Drawing.Point(166, 29);
             this.btnConfigSendAddresses.Name = "btnConfigSendAddresses";
-            this.btnConfigSendAddresses.Size = new System.Drawing.Size(143, 30);
+            this.btnConfigSendAddresses.Size = new System.Drawing.Size(143, 45);
             this.btnConfigSendAddresses.TabIndex = 1;
             this.btnConfigSendAddresses.Text = "配置发送地址";
             this.btnConfigSendAddresses.Click += new System.EventHandler(this.btnConfigSendAddresses_Click);
@@ -319,7 +319,7 @@ namespace CosmxMESClient {
             this.btnStartAutoRead.BackColor = System.Drawing.Color.LightGreen;
             this.btnStartAutoRead.Location = new System.Drawing.Point(315, 29);
             this.btnStartAutoRead.Name = "btnStartAutoRead";
-            this.btnStartAutoRead.Size = new System.Drawing.Size(129, 30);
+            this.btnStartAutoRead.Size = new System.Drawing.Size(129, 45);
             this.btnStartAutoRead.TabIndex = 2;
             this.btnStartAutoRead.Text = "启动自动读取";
             this.btnStartAutoRead.UseVisualStyleBackColor = false;
@@ -330,7 +330,7 @@ namespace CosmxMESClient {
             this.btnStopAutoRead.BackColor = System.Drawing.Color.LightCoral;
             this.btnStopAutoRead.Location = new System.Drawing.Point(450, 29);
             this.btnStopAutoRead.Name = "btnStopAutoRead";
-            this.btnStopAutoRead.Size = new System.Drawing.Size(145, 30);
+            this.btnStopAutoRead.Size = new System.Drawing.Size(145, 45);
             this.btnStopAutoRead.TabIndex = 3;
             this.btnStopAutoRead.Text = "停止自动读取";
             this.btnStopAutoRead.UseVisualStyleBackColor = false;
@@ -397,8 +397,8 @@ namespace CosmxMESClient {
             this.dgvPLCConfigs.ReadOnly = true;
             this.dgvPLCConfigs.RowHeadersVisible = false;
             this.dgvPLCConfigs.RowHeadersWidth = 62;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft YaHei UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.dgvPLCConfigs.RowsDefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft YaHei UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.dgvPLCConfigs.RowsDefaultCellStyle = dataGridViewCellStyle1;
             this.dgvPLCConfigs.RowTemplate.Height = 25;
             this.dgvPLCConfigs.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dgvPLCConfigs.Size = new System.Drawing.Size(1294, 563);

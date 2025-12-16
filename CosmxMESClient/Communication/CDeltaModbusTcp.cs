@@ -7,6 +7,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -42,7 +43,7 @@ namespace CosmxMESClient.Communication {
         #endregion
 
         #region 私有字段和属性
-        private ModbusTcpNet _modbusClient;
+        private static ModbusTcpNet _modbusClient;
         private readonly ReaderWriterLockSlim _lock = new ReaderWriterLockSlim();
         private bool _disposed = false;
         private string _lastError = string.Empty;
@@ -76,7 +77,7 @@ namespace CosmxMESClient.Communication {
         public string IpAddress {
             get => _ipAddress;
             set {
-                if (!IsOpen)
+                if (! _IsConnected)
                     _ipAddress=value;
                 }
             }
@@ -84,7 +85,7 @@ namespace CosmxMESClient.Communication {
         public IPEndPoint IPEnd {
             get => _localEndPoint;
             set {
-                if (!IsOpen)
+                if (! _IsConnected)
                     _localEndPoint=value;
                 }
             }
@@ -92,7 +93,7 @@ namespace CosmxMESClient.Communication {
         public int Port {
             get => _port;
             set {
-                if (!IsOpen)
+                if (! _IsConnected)
                     _port=value;
                 }
             }
@@ -100,7 +101,7 @@ namespace CosmxMESClient.Communication {
         public byte SlaveId {
             get => _slaveId;
             set {
-                if (!IsOpen)
+                if (! _IsConnected)
                     _slaveId=value;
                 if (_modbusClient!=null)
                     _modbusClient.Station=value;
@@ -125,8 +126,6 @@ namespace CosmxMESClient.Communication {
             }
 
         public string LastError => _lastError;
-        public bool IsOpen=false;
-        public bool IsConnected => IsOpen;
         #endregion
 
         #region 心跳机制
@@ -157,6 +156,9 @@ namespace CosmxMESClient.Communication {
             get => _heartbeatAddress;
             set => _heartbeatAddress=value;
             }
+
+        bool IPlcCommunication.IsConnected => _IsConnected;
+        private bool _IsConnected=_modbusClient!=null?_modbusClient.IpAddressPing()==IPStatus.Success:false;
         #endregion
 
         #region 构造函数
@@ -196,7 +198,7 @@ namespace CosmxMESClient.Communication {
             }
 
         private void OnHeartbeatElapsed( object sender,ElapsedEventArgs e ) {
-            if (!IsOpen||!_heartbeatEnabled)
+            if (! _IsConnected||!_heartbeatEnabled)
                 return;
 
             ThreadPool.QueueUserWorkItem(state => ExecuteHeartbeat( ));
@@ -206,7 +208,7 @@ namespace CosmxMESClient.Communication {
             try {
                 _lock.EnterReadLock( );
                 try {
-                    if (!IsOpen)
+                    if (! _IsConnected)
                         return;
                     var result = _modbusClient.ReadInt16(_heartbeatAddress.ToString());
                     if (!result.IsSuccess)
@@ -292,7 +294,7 @@ namespace CosmxMESClient.Communication {
 
         private bool InitializeUnderLock( ) {
             try {
-                if (IsOpen) {
+                if ( _IsConnected) {
                     LoggingService.Info("PLC连接已存在，先关闭现有连接");
                     CloseUnderLock( );
                     }
@@ -315,7 +317,7 @@ namespace CosmxMESClient.Communication {
                     }
 
 
-                IsOpen=true;
+                 _IsConnected=true;
                 _lastError=string.Empty;
 
                 if (_heartbeatAddress>0&&_heartbeatEnabled) {
@@ -374,14 +376,14 @@ namespace CosmxMESClient.Communication {
         private void CloseConnectionUnderLock( ) {
             _modbusClient?.ConnectClose( );
             _modbusClient=null;
-            IsOpen=false;
+            // _IsConnected=false;
             _lastError=string.Empty;
             }
         #endregion
 
         #region 基础数据读写
         public bool ReadRegister( string address,ref int value ) {
-            if (!IsOpen||!TryParseAddress(address,out ushort modbusAddress))
+            if (! _IsConnected||!TryParseAddress(address,out ushort modbusAddress))
                 return false;
 
             _lock.EnterReadLock( );
@@ -402,12 +404,12 @@ namespace CosmxMESClient.Communication {
                 }
 
             _lastError=string.Empty;
-            OnDataRead(new DataReadEventArgs(address,value,typeof(int),IPEnd));
+            OnDataRead(new DataReadEventArgs(address,value,TypeCode.Int16,IPEnd));
             return true;
             }
 
         public bool WriteRegister( string address,int value ) {
-            if (!IsOpen||!TryParseAddress(address,out ushort modbusAddress))
+            if (! _IsConnected||!TryParseAddress(address,out ushort modbusAddress))
                 return false;
 
             if (value<short.MinValue||value>short.MaxValue) {
@@ -437,7 +439,7 @@ namespace CosmxMESClient.Communication {
             }
 
         public bool ReadInt32( string address,ref int value ) {
-            if (!IsOpen||!TryParseAddress(address,out ushort modbusAddress))
+            if (! _IsConnected||!TryParseAddress(address,out ushort modbusAddress))
                 return false;
 
             _lock.EnterReadLock( );
@@ -458,12 +460,12 @@ namespace CosmxMESClient.Communication {
                 }
 
             _lastError=string.Empty;
-            OnDataRead(new DataReadEventArgs(address,value,typeof(int),IPEnd));
+            OnDataRead(new DataReadEventArgs(address,value,TypeCode.Int32,IPEnd));
             return true;
             }
 
         public bool WriteInt32( string address,int value ) {
-            if (!IsOpen||!TryParseAddress(address,out ushort modbusAddress))
+            if (! _IsConnected||!TryParseAddress(address,out ushort modbusAddress))
                 return false;
 
             _lock.EnterWriteLock( );
@@ -488,7 +490,7 @@ namespace CosmxMESClient.Communication {
             }
 
         public bool ReadFloat( string address,ref float value ) {
-            if (!IsOpen||!TryParseAddress(address,out ushort modbusAddress))
+            if (! _IsConnected||!TryParseAddress(address,out ushort modbusAddress))
                 return false;
 
             _lock.EnterReadLock( );
@@ -509,12 +511,12 @@ namespace CosmxMESClient.Communication {
                 }
 
             _lastError=string.Empty;
-            OnDataRead(new DataReadEventArgs(address,value,typeof(float),IPEnd));
+            OnDataRead(new DataReadEventArgs(address,value,TypeCode.Single,IPEnd));
             return true;
             }
 
         public bool WriteFloat( string address,float value ) {
-            if (!IsOpen||!TryParseAddress(address,out ushort modbusAddress))
+            if (! _IsConnected||!TryParseAddress(address,out ushort modbusAddress))
                 return false;
 
             _lock.EnterWriteLock( );
@@ -539,7 +541,7 @@ namespace CosmxMESClient.Communication {
             }
 
         public bool ReadDouble( string address,int power,ref double value ) {
-            if (!IsOpen||!TryParseAddress(address,out ushort modbusAddress))
+            if (! _IsConnected||!TryParseAddress(address,out ushort modbusAddress))
                 return false;
 
             _lock.EnterReadLock( );
@@ -560,12 +562,12 @@ namespace CosmxMESClient.Communication {
                 }
 
             _lastError=string.Empty;
-            OnDataRead(new DataReadEventArgs(address,value,typeof(double),IPEnd));
+            OnDataRead(new DataReadEventArgs(address,value,TypeCode.Double,IPEnd));
             return true;
             }
 
         public bool WriteDouble( string address,int power,double value ) {
-            if (!IsOpen||!TryParseAddress(address,out ushort modbusAddress))
+            if (! _IsConnected||!TryParseAddress(address,out ushort modbusAddress))
                 return false;
 
             _lock.EnterWriteLock( );
@@ -590,7 +592,7 @@ namespace CosmxMESClient.Communication {
             }
 
         public bool ReadRegisterBit( string address,ref bool value ) {
-            if (!IsOpen||!TryParseExtendedAddress(address,out ushort modbusAddress,out byte bitIndex))
+            if (! _IsConnected||!TryParseExtendedAddress(address,out ushort modbusAddress,out byte bitIndex))
                 return false;
 
             _lock.EnterReadLock( );
@@ -611,12 +613,12 @@ namespace CosmxMESClient.Communication {
                 }
 
             _lastError=string.Empty;
-            OnDataRead(new DataReadEventArgs(address,value,typeof(bool),IPEnd));
+            OnDataRead(new DataReadEventArgs(address,value,TypeCode.Boolean,IPEnd));
             return true;
             }
 
         public bool WriteRegisterBit( string address,bool value ) {
-            if (!IsOpen||!TryParseExtendedAddress(address,out ushort modbusAddress,out byte bitIndex))
+            if (! _IsConnected||!TryParseExtendedAddress(address,out ushort modbusAddress,out byte bitIndex))
                 return false;
 
             _lock.EnterWriteLock( );
@@ -643,7 +645,7 @@ namespace CosmxMESClient.Communication {
 
         #region 批量数据操作
         public bool ReadContinuousInt( string address,int length,ref int[] values ) {
-            if (!IsOpen||!TryParseAddress(address,out ushort modbusAddress))
+            if (! _IsConnected||!TryParseAddress(address,out ushort modbusAddress))
                 return false;
 
             _lock.EnterReadLock( );
@@ -664,12 +666,12 @@ namespace CosmxMESClient.Communication {
                 }
 
             _lastError=string.Empty;
-            OnDataRead(new DataReadEventArgs(address,values,typeof(int[]),IPEnd,true,length));
+            OnDataRead(new DataReadEventArgs(address,values,TypeCode.Int16,IPEnd,true,length));
             return true;
             }
 
         public bool BatchWriteFloat( List<string> addresses,float[] values ) {
-            if (!IsOpen||addresses==null||values==null||addresses.Count!=values.Length)
+            if (! _IsConnected||addresses==null||values==null||addresses.Count!=values.Length)
                 return false;
 
             var failedWrites = new List<(string Address, float Value, string Error)>();
@@ -701,7 +703,7 @@ namespace CosmxMESClient.Communication {
             }
 
         public bool BatchReadFloat( List<string> addresses,ref float[] values ) {
-            if (!IsOpen||addresses==null||addresses.Count==0)
+            if (! _IsConnected||addresses==null||addresses.Count==0)
                 return false;
 
             values=new float[addresses.Count];
@@ -725,12 +727,12 @@ namespace CosmxMESClient.Communication {
                 }
 
             _lastError=string.Empty;
-            OnDataRead(new DataReadEventArgs(string.Join(", ",addresses),values,typeof(float[]),IPEnd,true,addresses.Count));
+            OnDataRead(new DataReadEventArgs(string.Join(", ",addresses),values,TypeCode.Single,IPEnd,true,addresses.Count));
             return true;
             }
 
         public bool BatchReadInt32( List<string> addresses,ref int[] values ) {
-            if (!IsOpen||addresses==null||addresses.Count==0)
+            if (! _IsConnected||addresses==null||addresses.Count==0)
                 return false;
 
             values=new int[addresses.Count];
@@ -754,12 +756,12 @@ namespace CosmxMESClient.Communication {
                 }
 
             _lastError=string.Empty;
-            OnDataRead(new DataReadEventArgs(string.Join(", ",addresses),values,typeof(int[]),IPEnd,true,addresses.Count));
+            OnDataRead(new DataReadEventArgs(string.Join(", ",addresses),values,TypeCode.Int32,IPEnd,true,addresses.Count));
             return true;
             }
 
         public bool BatchWriteInt32( List<string> addresses,int[] values ) {
-            if (!IsOpen||addresses==null||values==null||addresses.Count!=values.Length)
+            if (! _IsConnected||addresses==null||values==null||addresses.Count!=values.Length)
                 return false;
 
             _lock.EnterWriteLock( );
@@ -785,7 +787,7 @@ namespace CosmxMESClient.Communication {
             }
 
         public bool BatchReadInt( List<string> addresses,ref int[] values ) {
-            if (!IsOpen||addresses==null||addresses.Count==0)
+            if (! _IsConnected||addresses==null||addresses.Count==0)
                 return false;
 
             values=new int[addresses.Count];
@@ -809,12 +811,12 @@ namespace CosmxMESClient.Communication {
                 }
 
             _lastError=string.Empty;
-            OnDataRead(new DataReadEventArgs(string.Join(", ",addresses),values,typeof(int[]),IPEnd,true,addresses.Count));
+            OnDataRead(new DataReadEventArgs(string.Join(", ",addresses),values,TypeCode.Int16,IPEnd,true,addresses.Count));
             return true;
             }
 
         public bool BatchWriteInt( List<string> addresses,int[] values ) {
-            if (!IsOpen||addresses==null||values==null||addresses.Count!=values.Length)
+            if (! _IsConnected||addresses==null||values==null||addresses.Count!=values.Length)
                 return false;
 
             _lock.EnterWriteLock( );
@@ -840,7 +842,7 @@ namespace CosmxMESClient.Communication {
             }
 
         public bool BatchReadDouble( List<string> addresses,int power,ref double[] values ) {
-            if (!IsOpen||addresses==null||addresses.Count==0)
+            if (! _IsConnected||addresses==null||addresses.Count==0)
                 return false;
 
             values=new double[addresses.Count];
@@ -864,12 +866,12 @@ namespace CosmxMESClient.Communication {
                 }
 
             _lastError=string.Empty;
-            OnDataRead(new DataReadEventArgs(string.Join(", ",addresses),values,typeof(double[]),IPEnd,true,addresses.Count));
+            OnDataRead(new DataReadEventArgs(string.Join(", ",addresses),values,TypeCode.Double,IPEnd,true,addresses.Count));
             return true;
             }
 
         public bool BatchWriteDouble( List<string> addresses,int power,double[] values ) {
-            if (!IsOpen||addresses==null||values==null||addresses.Count!=values.Length)
+            if (! _IsConnected||addresses==null||values==null||addresses.Count!=values.Length)
                 return false;
 
             _lock.EnterWriteLock( );
@@ -895,7 +897,7 @@ namespace CosmxMESClient.Communication {
             }
 
         public bool BatchReadString( List<string> addresses,int maxStringLength,ref string[] texts ) {
-            if (!IsOpen||addresses==null||addresses.Count==0)
+            if (! _IsConnected||addresses==null||addresses.Count==0)
                 return false;
 
             texts=new string[addresses.Count];
@@ -920,12 +922,12 @@ namespace CosmxMESClient.Communication {
                 }
 
             _lastError=string.Empty;
-            OnDataRead(new DataReadEventArgs(string.Join(", ",addresses),texts,typeof(string[]),IPEnd,true,addresses.Count));
+            OnDataRead(new DataReadEventArgs(string.Join(", ",addresses),texts,TypeCode.String,IPEnd,true,addresses.Count));
             return true;
             }
 
         public bool BatchWriteString( List<string> addresses,string[] texts,int maxStringLength ) {
-            if (!IsOpen||addresses==null||texts==null||addresses.Count!=texts.Length)
+            if (! _IsConnected||addresses==null||texts==null||addresses.Count!=texts.Length)
                 return false;
 
             _lock.EnterWriteLock( );
@@ -954,7 +956,7 @@ namespace CosmxMESClient.Communication {
             }
 
         public bool BatchReadRegisterBits( List<string> addresses,ref bool[] values ) {
-            if (!IsOpen||addresses==null||addresses.Count==0)
+            if (! _IsConnected||addresses==null||addresses.Count==0)
                 return false;
 
             values=new bool[addresses.Count];
@@ -978,12 +980,12 @@ namespace CosmxMESClient.Communication {
                 }
 
             _lastError=string.Empty;
-            OnDataRead(new DataReadEventArgs(string.Join(", ",addresses),values,typeof(bool[]),IPEnd,true,addresses.Count));
+            OnDataRead(new DataReadEventArgs(string.Join(", ",addresses),values,TypeCode.Boolean,IPEnd,true,addresses.Count));
             return true;
             }
 
         public bool BatchWriteRegisterBits( List<string> addresses,bool[] values ) {
-            if (!IsOpen||addresses==null||values==null||addresses.Count!=values.Length)
+            if (! _IsConnected||addresses==null||values==null||addresses.Count!=values.Length)
                 return false;
 
             _lock.EnterWriteLock( );
@@ -1011,7 +1013,7 @@ namespace CosmxMESClient.Communication {
 
         #region 位操作
         public bool ReadCoil( string address,ref bool value ) {
-            if (!IsOpen||!TryParseCoilAddress(address,out ushort coilAddress))
+            if (! _IsConnected||!TryParseCoilAddress(address,out ushort coilAddress))
                 return false;
 
             _lock.EnterReadLock( );
@@ -1032,12 +1034,12 @@ namespace CosmxMESClient.Communication {
                 }
 
             _lastError=string.Empty;
-            OnDataRead(new DataReadEventArgs(address,value,typeof(bool),IPEnd));
+            OnDataRead(new DataReadEventArgs(address,value,TypeCode.Boolean,IPEnd));
             return true;
             }
 
         public bool WriteCoil( string address,bool value ) {
-            if (!IsOpen||!TryParseCoilAddress(address,out ushort coilAddress))
+            if (! _IsConnected||!TryParseCoilAddress(address,out ushort coilAddress))
                 return false;
 
             _lock.EnterWriteLock( );
@@ -1062,7 +1064,7 @@ namespace CosmxMESClient.Communication {
             }
 
         public bool ReadCoils( string address,int length,ref bool[] values ) {
-            if (!IsOpen||!TryParseCoilAddress(address,out ushort coilAddress))
+            if (! _IsConnected||!TryParseCoilAddress(address,out ushort coilAddress))
                 return false;
 
             _lock.EnterReadLock( );
@@ -1083,12 +1085,12 @@ namespace CosmxMESClient.Communication {
                 }
 
             _lastError=string.Empty;
-            OnDataRead(new DataReadEventArgs(address,values,typeof(bool[]),IPEnd,true,length));
+            OnDataRead(new DataReadEventArgs(address,values,TypeCode.Boolean,IPEnd,true,length));
             return true;
             }
 
         public bool WriteCoils( string address,bool[] values ) {
-            if (!IsOpen||!TryParseCoilAddress(address,out ushort coilAddress))
+            if (! _IsConnected||!TryParseCoilAddress(address,out ushort coilAddress))
                 return false;
 
             _lock.EnterWriteLock( );
@@ -1115,7 +1117,7 @@ namespace CosmxMESClient.Communication {
 
         #region 字符串操作
         public bool ReadString( string address,ref string text,int maxLength = 20 ) {
-            if (!IsOpen||!TryParseAddress(address,out ushort modbusAddress))
+            if (! _IsConnected||!TryParseAddress(address,out ushort modbusAddress))
                 return false;
 
             _lock.EnterReadLock( );
@@ -1138,12 +1140,12 @@ namespace CosmxMESClient.Communication {
                 }
 
             _lastError=string.Empty;
-            OnDataRead(new DataReadEventArgs(address,text,typeof(string),IPEnd));
+            OnDataRead(new DataReadEventArgs(address,text,TypeCode.String,IPEnd));
             return true;
             }
 
         public bool WriteString( string address,string text ) {
-            if (!IsOpen||string.IsNullOrEmpty(text)||!TryParseAddress(address,out ushort modbusAddress))
+            if (! _IsConnected||string.IsNullOrEmpty(text)||!TryParseAddress(address,out ushort modbusAddress))
                 return false;
 
             _lock.EnterWriteLock( );
@@ -1172,31 +1174,35 @@ namespace CosmxMESClient.Communication {
         #endregion
 
         #region 自动读取系统
-        private Dictionary<Type, Func<AutoReadConfig, bool>> _autoReadHandlers;
+        private Dictionary<TypeCode, Func<AutoReadConfig, bool>> _autoReadHandlers;
 
         private void InitializeAutoReadHandlers( ) {
-            _autoReadHandlers=new Dictionary<Type,Func<AutoReadConfig,bool>>
+            _autoReadHandlers=new Dictionary<TypeCode,Func<AutoReadConfig,bool>>
                 {
-                [typeof(int)]=config => {
+                [TypeCode.Int16]=config => {
                     int value = 0;
                     return ReadRegister(config.Addresses[0],ref value);
                 },
-                [typeof(float)]=config => {
+                [TypeCode.Int32]=config => {
+                    int value = 0;
+                    return ReadInt32(config.Addresses[0],ref value);
+                },
+                [TypeCode.Single]=config => {
                     float value = 0;
                     return ReadFloat(config.Addresses[0],ref value);
                 },
-                [typeof(double)]=config => {
+                [TypeCode.Double]=config => {
                     double value = 0;
                     return ReadDouble(config.Addresses[0],config.Power,ref value);
                 },
-                [typeof(bool)]=config => {
+                [TypeCode.Boolean]=config => {
                     bool value = false;
                     if (config.Addresses[0].Contains('.'))
                         return ReadRegisterBit(config.Addresses[0],ref value);
                     else
                         return ReadCoil(config.Addresses[0],ref value);
                 },
-                [typeof(string)]=config => {
+                [TypeCode.String]=config => {
                     string text = null;
                     return ReadString(config.Addresses[0],ref text,config.MaxLength);
                 }
@@ -1248,7 +1254,7 @@ namespace CosmxMESClient.Communication {
             }
 
         private void OnAutoReadCheck( object sender,ElapsedEventArgs e ) {
-            if (!IsOpen)
+            if (! _IsConnected)
                 return;
 
             var now = DateTime.Now;
@@ -1271,7 +1277,7 @@ namespace CosmxMESClient.Communication {
                 }
             }
 
-        public bool AddOrUpdateAutoRead( string key,string address,Type dataType,
+        public bool AddOrUpdateAutoRead( string key,string address,TypeCode dataType,
                                       int readIntervalMs = 1000,int power = 1,int length = 1,
                                       int maxLength = 20,bool isBulkRead = true ) {
             try {
@@ -1298,7 +1304,7 @@ namespace CosmxMESClient.Communication {
                 }
             }
 
-        public bool AddOrUpdateAutoRead( string key,List<string> addresses,Type dataType,
+        public bool AddOrUpdateAutoRead( string key,List<string> addresses,TypeCode dataType,
                                        int readIntervalMs = 1000,int power = 1,int length = 1,
                                        int maxLength = 10,bool isBulkRead = true ) {
             try {
@@ -1372,22 +1378,27 @@ namespace CosmxMESClient.Communication {
                     }
                 else {
                     foreach (var address in config.Addresses) {
-                        if (config.DataType==typeof(int)) {
+                        if (config.DataType==TypeCode.Int16) {
                             int value = 0;
                             if (!ReadRegister(address,ref value))
                                 return false;
                             }
-                        else if (config.DataType==typeof(float)) {
+                        else if (config.DataType==TypeCode.Int32) {
+                            int value = 0;
+                            if (!ReadInt32(address,ref value))
+                                return false;
+                            }
+                        else if (config.DataType==TypeCode.Single) {
                             float value = 0;
                             if (!ReadFloat(address,ref value))
                                 return false;
                             }
-                        else if (config.DataType==typeof(double)) {
+                        else if (config.DataType==TypeCode.Double) {
                             double value = 0;
                             if (!ReadDouble(address,config.Power,ref value))
                                 return false;
                             }
-                        else if (config.DataType==typeof(bool)) {
+                        else if (config.DataType==TypeCode.Boolean) {
                             bool value = false;
                             if (address.Contains('.')) {
                                 if (!ReadRegisterBit(address,ref value))
@@ -1398,7 +1409,7 @@ namespace CosmxMESClient.Communication {
                                     return false;
                                 }
                             }
-                        else if (config.DataType==typeof(string)) {
+                        else if (config.DataType==TypeCode.String) {
                             string text = null;
                             if (!ReadString(address,ref text,config.MaxLength))
                                 return false;
@@ -1458,7 +1469,7 @@ namespace CosmxMESClient.Communication {
             }
 
         public void SetHeartbeatAddress( string address ) {
-            if (!IsOpen||!TryParseAddress(address,out ushort modbusAddress))
+            if (! _IsConnected||!TryParseAddress(address,out ushort modbusAddress))
                 return;
             HeartbeatAddress=modbusAddress;
             }
@@ -1473,7 +1484,7 @@ namespace CosmxMESClient.Communication {
                 IsEnabled=_heartbeatEnabled,
                 Interval=_heartbeatInterval,
                 LastRetryCount=_currentRetryCount,
-                IsConnectionAlive=IsOpen&&_currentRetryCount==0,
+                IsConnectionAlive= _IsConnected&&_currentRetryCount==0,
                 LastCheckTime=DateTime.Now
                 };
             }
@@ -1672,7 +1683,7 @@ namespace CosmxMESClient.Communication {
         public bool TestByteOrder( string testAddress = "0" ) {
             LoggingService.Info($"开始端序测试，地址: {testAddress}, 当前端序: {_byteOrder}");
 
-            if (!IsOpen||!TryParseAddress(testAddress,out ushort modbusAddress)) {
+            if (! _IsConnected||!TryParseAddress(testAddress,out ushort modbusAddress)) {
                 LoggingService.Error("端序测试失败: PLC未连接或地址解析失败");
                 return false;
                 }
@@ -1857,7 +1868,7 @@ namespace CosmxMESClient.Communication {
             }
 
         public bool AutoDetectByteOrder( string testAddress = "0" ) {
-            if (!IsOpen||!TryParseAddress(testAddress,out ushort modbusAddress))
+            if (! _IsConnected||!TryParseAddress(testAddress,out ushort modbusAddress))
                 return false;
 
             var originalOrder = _byteOrder;

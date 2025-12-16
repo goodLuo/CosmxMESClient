@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -18,6 +19,7 @@ namespace CosmxMESClient {
         // PLC配置管理器
         private PLCAddressManager _plcAddressManager;
         private FormPLCConfig _plcConfigForm;
+        private List<PLCConnectionConfig> pLCConnections=new List<PLCConnectionConfig>();
 
         private SimplifiedPLCReconnectManager _reconnectManager;
 
@@ -25,32 +27,7 @@ namespace CosmxMESClient {
         private Dictionary<string, ListViewItem> _plcStatusItems;
         private object _statusLock = new object();
         private System.Timers.Timer _statusRefreshTimer;
-
         private readonly Dictionary<string, bool> _eventSubscriptions = new Dictionary<string, bool>();
-
-
-        // 重连信息类
-        private class PLCReconnectInfo {
-            public PLCConnectionConfig Config {
-                get; set;
-                }
-            public int AttemptCount {
-                get; set;
-                }
-            public DateTime LastAttemptTime {
-                get; set;
-                }
-            public bool IsReconnecting {
-                get; set;
-                }
-            public string LastError {
-                get; set;
-                }
-            public DateTime LastSuccessTime {
-                get; set;
-                }
-            }
-
         public Form1( ) {
             InitializeComponent( );
             // 初始化日志系统
@@ -123,16 +100,17 @@ namespace CosmxMESClient {
         private async Task InitializePLCManagerAsync( ) {
             try {
                 AppendLog("开始初始化PLC管理器...");
-
                 _plcAddressManager=PLCAddressManager.Instance;
                 InitializeStatusDisplay( );
 
-                // 先加载配置，但不立即启动
+                // 只加载配置，不立即连接
                 await LoadPLCConfigsAsync( );
 
-                // 延迟启动自动读取
+                // 延迟3秒后统一连接（避免重复）
                 await Task.Delay(3000);
-                await StartAllAutoReadsAsync( );
+
+                // 使用新的单次连接方法
+                await ConnectAllPLCsOnceAsync( );
 
                 UpdateStatus("系统就绪",true);
                 AppendLog("PLC管理器初始化完成");
@@ -142,19 +120,81 @@ namespace CosmxMESClient {
                 UpdateStatus($"初始化失败: {ex.Message}",false);
                 }
             }
-        private async Task StartAllAutoReadsAsync( ) {
+        private async Task ConnectAllPLCsOnceAsync( ) {
             var configs = PLCConfigManager.LoadConfigs().Where(c => c.IsEnabled).ToList();
 
+            AppendLog($"开始连接 {configs.Count} 个启用的PLC...");
+
             foreach (var config in configs) {
-                // 分批启动，避免同时连接过多PLC
-                await ConnectAndStartAutoReadAsync(config);
-                await Task.Delay(1000); // 每个PLC间隔1秒
+                // 检查是否已连接
+                if (config.IsConnected) {
+                    AppendLog($"PLC {config.Name} 已连接，跳过");
+                    continue;
+                    }
+
+                try {
+                    // 使用统一的连接方法
+                    bool connected = await SafeConnectPLCAsync(config);
+                    if (connected) {
+                        AppendLog($"PLC {config.Name} 连接成功");
+                        pLCConnections.Add(config);
+                        // 安全启动自动读取
+                        await SafeStartAutoRead(config);
+                        }
+                    else {
+                        AppendLog($"PLC {config.Name} 连接失败");
+                        }
+                    }
+                catch (Exception ex) {
+                    LoggingService.Error($"连接PLC失败: {config.Name}",ex);
+                    }
+
+                await Task.Delay(500); // 连接间隔
+                }
+            }
+        // 安全的PLC连接方法
+        private async Task<bool> SafeConnectPLCAsync( PLCConnectionConfig config ) {
+            try {
+                UpdateStatusItem(config.Key,"连接中...",Color.Orange,0);
+
+                // 检查是否已连接
+                if (config.IsConnected) {
+                    AppendLog($"PLC {config.Name} 已经连接");
+                    return true;
+                    }
+
+                // 异步连接
+                bool success = await Task.Run(() => {
+                    try {
+                        return config.Connect();
+                        }
+                    catch (Exception ex) {
+                        LoggingService.Error($"PLC连接异常: {config.Name}", ex);
+                        return false;
+                        }
+                });
+
+                if (success) {
+                    UpdateStatusItem(config.Key,"已连接",Color.Green,0);
+                    // 订阅事件
+                    SubscribeToPLCDataEvents(config);
+                    return true;
+                    }
+                else {
+                    UpdateStatusItem(config.Key,"连接失败",Color.Red,0);
+                    return false;
+                    }
+                }
+            catch (Exception ex) {
+                LoggingService.Error($"安全连接PLC失败: {config.Name}",ex);
+                UpdateStatusItem(config.Key,"连接异常",Color.Red,0);
+                return false;
                 }
             }
         private async Task LoadPLCConfigsAsync( ) {
             try {
                 AppendLog("开始加载PLC配置...");
-                var configs = await Task.Run(() => PLCConfigManager.LoadConfigs());
+                var configs  = await Task.Run(() => PLCConfigManager.LoadConfigs());
 
                 if (configs.Count==0) {
                     AppendLog("未找到PLC配置，请通过菜单进行配置");
@@ -165,69 +205,30 @@ namespace CosmxMESClient {
                 foreach (var config in configs) {
                     if (config.IsEnabled) {
                         enabledCount++;
-                        await RegisterAndStartPLCAsync(config);
+                        // 只注册配置，不连接
+                        RegisterPLCConfigOnly(config);
                         }
                     }
 
-                AppendLog($"已加载 {enabledCount} 个启用的PLC配置，并启动自动读取");
+                AppendLog($"已加载 {enabledCount} 个启用的PLC配置");
                 }
             catch (Exception ex) {
                 LoggingService.Error("加载PLC配置失败",ex);
                 AppendLog($"加载PLC配置失败: {ex.Message}");
                 }
             }
-
-        // 核心方法：注册PLC并启动自动读取
-        private async Task RegisterAndStartPLCAsync( PLCConnectionConfig config ) {
+        // 只注册配置，不连接
+        private void RegisterPLCConfigOnly( PLCConnectionConfig config ) {
             try {
                 if (_plcAddressManager.RegisterPLCConfig(config)) {
                     CreateStatusItem(config);
                     AppendLog($"已注册PLC配置: {config.Name}");
-
-                    // 连接并启动自动读取
-                    bool connected = await ConnectAndStartAutoReadAsync(config);
-
-                    if (!connected) {
-                        // 连接失败，设置重连机制（简化版）
-                        SetupSimpleReconnect(config);
-                        }
                     }
                 }
             catch (Exception ex) {
                 LoggingService.Error($"注册PLC配置失败: {config.Name}",ex);
                 }
             }
-
-        // 连接并启动自动读取
-        private async Task<bool> ConnectAndStartAutoReadAsync( PLCConnectionConfig config ) {
-            try {
-                UpdateStatusItem(config.Key,"连接中...",Color.Orange,0);
-
-                // 先确保连接成功
-                bool success = await Task.Run(() => config.Connect());
-                if (!success)
-                    return false;
-
-                // 等待PLC完全初始化
-                await Task.Delay(1000);
-
-                // 先订阅事件，再启动自动读取
-                SubscribeToPLCDataEvents(config);
-
-                // 安全启动自动读取
-                await SafeStartAutoRead(config);
-
-                UpdateStatusItem(config.Key,"运行中",Color.Green,0);
-                AppendLog($"PLC自动读取启动成功: {config.Name}");
-                return true;
-                }
-            catch (Exception ex) {
-                LoggingService.Error($"PLC自动读取启动失败: {config.Name}",ex);
-                UpdateStatusItem(config.Key,"自动读取异常",Color.Red,0);
-                return false;
-                }
-            }
-
         private async Task SafeStartAutoRead( PLCConnectionConfig config ) {
             try {
                 // 检查PLC连接状态
@@ -251,21 +252,6 @@ namespace CosmxMESClient {
             catch (Exception ex) {
                 LoggingService.Error($"安全启动自动读取失败: {config.Name}",ex);
                 throw;
-                }
-            }
-
-        // 简化的重连机制
-        private void SetupSimpleReconnect( PLCConnectionConfig config ) {
-            // 使用PLC驱动自带的重连机制，而不是应用层复杂重连
-            if (config.PLCInstance!=null) {
-                // 设置PLC驱动的心跳检测和自动重连
-                config.HeartbeatEnabled=true;
-                config.HeartbeatInterval=30000; // 30秒
-
-                // 订阅心跳事件
-                config.PLCInstance.HeartbeatStatusChanged+=( sender,e ) => {
-                    OnPLCHeartbeatStatusChanged(sender,e,config);
-                };
                 }
             }
         #endregion
@@ -355,16 +341,6 @@ namespace CosmxMESClient {
             try {
                 // 注册到地址管理器
                 if (_plcAddressManager.RegisterPLCConfig(config)) {
-                    // 初始化重连信息 - 这是关键修复点
-                    var reconnectInfo = new PLCReconnectInfo
-                        {
-                        Config = config,
-                        AttemptCount = 0,
-                        LastAttemptTime = DateTime.MinValue,
-                        IsReconnecting = false,
-                        LastError = string.Empty,
-                        LastSuccessTime = DateTime.MinValue
-                        };
                     // 创建状态显示项
                     CreateStatusItem(config);
 
@@ -378,21 +354,6 @@ namespace CosmxMESClient {
             catch (Exception ex) {
                 LoggingService.Error($"注册PLC配置失败: {config.Name}",ex);
                 AppendLog($"注册PLC配置失败: {config.Name} - {ex.Message}");
-                }
-            }
-
-        private async Task RegisterPLCConfigAsync( PLCConnectionConfig config ) {
-            try {
-                if (_plcAddressManager.RegisterPLCConfig(config)) {
-                    CreateStatusItem(config);
-                    AppendLog($"已注册PLC配置: {config.Name}");
-
-                    // 简化连接逻辑：只尝试连接一次，失败后由PLC自带的重连机制处理
-                    await TryConnectPLCOnceAsync(config);
-                    }
-                }
-            catch (Exception ex) {
-                LoggingService.Error($"注册PLC配置失败: {config.Name}",ex);
                 }
             }
         private async Task<bool> TryConnectPLCOnceAsync( PLCConnectionConfig config ) {
@@ -465,8 +426,11 @@ namespace CosmxMESClient {
                 config.PLCInstance.DataRead+=OnPLCDataRead;
 
                 // 订阅心跳事件
-             //   config.PLCInstance.HeartbeatStatusChanged-=OnHeartbeatStatusChanged;
-          //      config.PLCInstance.HeartbeatStatusChanged+=OnHeartbeatStatusChanged;
+                config.PLCInstance.HeartbeatStatusChanged-=( sender,e ) =>
+                    OnPLCHeartbeatStatusChanged(sender,e,config);
+
+                config.PLCInstance.HeartbeatStatusChanged+=( senderL,eL ) =>
+                    OnPLCHeartbeatStatusChanged(senderL,eL,config);
 
                 // 订阅写入完成事件
                 config.PLCInstance.DataWriteCompleted-=OnPLCDataWriteCompleted;
@@ -483,10 +447,10 @@ namespace CosmxMESClient {
         private void UnsubscribeFromPLCDataEvents( PLCConnectionConfig config ) {
             if (config.PLCInstance==null)
                 return;
-
             try {
                 config.PLCInstance.DataRead-=OnPLCDataRead;
-            //    config.PLCInstance.HeartbeatStatusChanged-=OnHeartbeatStatusChanged;
+                config.PLCInstance.HeartbeatStatusChanged-=( sender,e ) =>
+                    OnPLCHeartbeatStatusChanged(sender,e,config);
                 config.PLCInstance.DataWriteCompleted-=OnPLCDataWriteCompleted;
 
                 string key = config.Key;
@@ -511,101 +475,22 @@ namespace CosmxMESClient {
                 return false;
                 }
             }
-        // 添加自动读取监控定时器
-        private void InitializeAutoReadMonitor( ) {
-            var monitorTimer = new System.Timers.Timer(30000); // 30秒检查一次
-            monitorTimer.Elapsed+=async ( s,e ) => await CheckAutoReadStatusAsync( );
-            monitorTimer.Start( );
-            }
-        private async Task CheckAutoReadStatusAsync( ) {
-            var configs = PLCConfigManager.LoadConfigs().Where(c => c.IsEnabled).ToList();
-
-            foreach (var config in configs) {
-                if (config.IsConnected&&!IsAutoReadRunning(config)) {
-                    AppendLog($"检测到自动读取停止，尝试重启: {config.Name}");
-                    await SafeRestartAutoRead(config);
-                    }
-                }
-            }
-        private async Task SafeRestartAutoRead( PLCConnectionConfig config ) {
-            try {
-                config.StopAutoRead( );
-                await Task.Delay(2000);
-
-                // 重新连接
-                if (!config.IsConnected) {
-                    bool reconnected = await Task.Run(() => config.Connect());
-                    if (!reconnected)
-                        return;
-                    }
-
-                await SafeStartAutoRead(config);
-                AppendLog($"自动读取重启成功: {config.Name}");
-                }
-            catch (Exception ex) {
-                LoggingService.Error($"重启自动读取失败: {config.Name}",ex);
-                }
-            }
         // PLC数据读取事件处理（自动读取的核心）
         private void OnPLCDataRead( object sender,DataReadEventArgs e ) {
             if (this.InvokeRequired) {
                 this.Invoke(new EventHandler<DataReadEventArgs>(OnPLCDataRead),sender,e);
                 return;
                 }
-
             try {
-                // 处理读取到的数据（自动读取的核心功能）
-                string dataInfo = $"PLC数据读取 - 地址: {e.Address}, 值: {e.Value}, 类型: {e.ValueType.Name}";
-
-                if (e.IsArray) {
-                    dataInfo+=$", 数组长度: {e.ArrayLength}";
-                    }
-
-                AppendLog(dataInfo);
-
                 // 可以根据地址进行特定的业务处理
-                ProcessPLCDataByAddress(e.Address,e.Value,e.ValueType);
+                // 示例：根据不同的地址进行不同的业务处理
+                var addressKey=   pLCConnections.Find(p=>p.PLCInstance.IPEnd.Equals(e.LocalEndPoint));
+                var cc=  _plcAddressManager.ReadAddressInternal(addressKey,(addressKey.ScanAddresses.ToList()).Find(p=>p.Address==e.Address),e.Value,e.ValueType);
                 }
             catch (Exception ex) {
                 LoggingService.Error("处理PLC数据读取事件失败",ex);
                 }
             }
-
-        // 根据地址处理PLC数据（业务逻辑）
-        private void ProcessPLCDataByAddress( string address,object value,Type valueType ) {
-            try {
-                // 示例：根据不同的地址进行不同的业务处理
-                switch (address) {
-                    case "D100": // 设备状态
-                        ProcessEquipmentStatus(value);
-                        break;
-                    case "D101": // 生产计数
-                                 //     ProcessProductionCount(value);
-                        break;
-                    case "D102": // 温度数据
-                                 //   ProcessTemperatureData(value);
-                        break;
-                    default:
-                        if (address.StartsWith("D")||address.StartsWith("M")) {
-                            AppendLog($"PLC数据 - {address}: {value}");
-                            }
-                        break;
-                    }
-                }
-            catch (Exception ex) {
-                LoggingService.Error($"处理PLC地址数据失败: {address}",ex);
-                }
-            }
-        // 示例业务处理方法
-        private void ProcessEquipmentStatus( object value ) {
-            // 处理设备状态逻辑
-            if (value is int statusCode) {
-                string statusText = statusCode == 1 ? "运行中" : "停止";
-                UpdateEquipmentStatusDisplay($"设备状态: {statusText}");
-                }
-            }
-
-        // PLC心跳状态事件处理
         // PLC心跳状态事件处理
         private void OnPLCHeartbeatStatusChanged( object sender,HeartbeatEventArgs e,PLCConnectionConfig config ) {
             if (this.InvokeRequired) {
@@ -626,15 +511,6 @@ namespace CosmxMESClient {
                 UpdateStatusItem(config.Key,"运行中",Color.Green,0);
                 }
             }
-
-        // 更新PLC状态显示
-        private void UpdatePLCStatusDisplay( string message,bool isNormal ) {
-            // 更新PLC状态显示
-            if (!isNormal) {
-                // 异常状态用红色显示
-                UpdateStatus($"PLC异常: {message}",false);
-                }
-            }
         // PLC数据写入完成事件处理
         private void OnPLCDataWriteCompleted( object sender,DataWriteEventArgs e ) {
             if (this.InvokeRequired) {
@@ -651,22 +527,6 @@ namespace CosmxMESClient {
 
             AppendLog(message);
             }
-
-        // 尝试自动重连PLC
-        private void TryAutoReconnectPLC( IPlcCommunication plcInstance ) {
-            try {
-                if (plcInstance!=null&&!plcInstance.IsConnected) {
-                    AppendLog("尝试自动重连PLC...");
-
-                    // 这里可以添加重连逻辑
-                    // 注意：在实际应用中需要考虑重连次数限制和间隔
-                    }
-                }
-            catch (Exception ex) {
-                LoggingService.Error("PLC自动重连失败",ex);
-                }
-            }
-
         // 更新设备状态显示
         private void UpdateEquipmentStatusDisplay( string statusText ) {
             // 可以在界面上显示设备状态
@@ -1089,7 +949,6 @@ namespace CosmxMESClient {
         private void AppendLog( string message ) {
             LoggingService.Info(message);
             }
-
         private void UpdateStatus( string message,bool isSuccess ) {
             if (lblStatus.InvokeRequired) {
                 lblStatus.Invoke(new Action<string,bool>(UpdateStatus),message,isSuccess);
@@ -1099,7 +958,6 @@ namespace CosmxMESClient {
             lblStatus.Text=message;
             lblStatus.ForeColor=isSuccess ? System.Drawing.Color.Green : System.Drawing.Color.Red;
             }
-
         private void SetButtonEnabled( Button button,bool enabled ) {
             if (button.InvokeRequired) {
                 button.Invoke(new Action<Button,bool>(SetButtonEnabled),button,enabled);
@@ -1119,10 +977,7 @@ namespace CosmxMESClient {
 
             MessageBox.Show(message,"错误",MessageBoxButtons.OK,MessageBoxIcon.Error);
             }
-
-
         #endregion
-
         #region 菜单和工具栏
 
         private void InitializeMenu( ) {

@@ -21,10 +21,8 @@ namespace CosmxMESClient {
         private readonly object _connectionsLock = new object();
         private System.Timers.Timer _connectionMonitorTimer;
         private BindingSource _bindingSource;
-
         private BindingSource _scanAddressesBindingSource = new BindingSource();
         private BindingSource _sendAddressesBindingSource = new BindingSource();
-
         public FormPLCConfig( ) {
             InitializeComponent( );
             InitializeData( );
@@ -112,7 +110,6 @@ namespace CosmxMESClient {
             txtHeartbeatAddress.DataBindings.Add("Text",_bindingSource,"HeartbeatAddress",false,DataSourceUpdateMode.OnPropertyChanged);
             chkEnabled.DataBindings.Add("Checked",_bindingSource,"IsEnabled",false,DataSourceUpdateMode.OnPropertyChanged);
             }
-
         // 统一的连接管理方法
         public bool ConnectPLC( PLCConnectionConfig config ) {
             lock (_connectionsLock) {
@@ -143,20 +140,6 @@ namespace CosmxMESClient {
                 return false;
                 }
             }
-
-        public void DisconnectPLC( PLCConnectionConfig config ) {
-            lock (_connectionsLock) {
-                if (_activeConnections.ContainsKey(config.Key)) {
-                    _activeConnections[config.Key].Disconnect( );
-                    _activeConnections.Remove(config.Key);
-                    }
-                else {
-                    config.Disconnect( );
-                    }
-                UpdatePLCStatus(config,false);
-                }
-            }
-
         public void DisconnectAll( ) {
             lock (_connectionsLock) {
                 var keys = _activeConnections.Keys.ToList();
@@ -212,7 +195,6 @@ namespace CosmxMESClient {
             chkEnabled.Checked=true;
             chkHeartbeatEnabled.Checked=true;
             }
-
         private void LoadConfigToForm( PLCConnectionConfig config ) {
             txtName.Text=config.Name;
             cmbPLCType.SelectedItem=config.PLCType;
@@ -229,90 +211,6 @@ namespace CosmxMESClient {
 
            // LoadScanAddresses(config.ScanAddresses.Values.ToList( ));
            // LoadSendAddresses(config.SendAddresses.Values.ToList());
-            }
-
-        private void LoadScanAddresses( List<PLCScanAddress> addresses ) {
-            lvScanAddresses.Items.Clear( );
-
-            foreach (var address in addresses.OrderBy(a => a.Name)) {
-                var item = new ListViewItem(address.Key);
-                item.SubItems.Add(address.Name);
-                item.SubItems.Add(address.Address);
-                item.SubItems.Add(GetDataTypeDisplayName(address.DataType));
-                item.SubItems.Add(address.Description);
-                item.SubItems.Add(address.ReadInterval.ToString( ));
-                item.SubItems.Add(address.Power.ToString( ));
-                item.SubItems.Add(address.Length.ToString( ));
-                item.SubItems.Add(address.IsEnabled ? "启用" : "禁用");
-
-                // 设置行颜色
-                if (!address.IsEnabled)
-                    item.BackColor=Color.LightGray;
-                else if (address.ReadInterval<500)
-                    item.BackColor=Color.LightCyan; // 高频扫描
-
-                item.Tag=address;
-                lvScanAddresses.Items.Add(item);
-                }
-
-            UpdateScanAddressesSummary( );
-            }
-        private string GetDataTypeDisplayName( Type dataType ) {
-            if (dataType==null)
-                return "未知";
-
-            switch (dataType.Name) {
-                case "Boolean":
-                    return "布尔";
-                case "Int32":
-                    return "整数";
-                case "Single":
-                    return "浮点数";
-                case "Double":
-                    return "双精度";
-                case "String":
-                    return "字符串";
-                default:
-                    return dataType.Name;
-                }
-            }
-        private void UpdateScanAddressesSummary( ) {
-            var enabledCount = _currentConfig.ScanAddresses.Count(a => a.IsEnabled);
-            var highFreqCount = _currentConfig.ScanAddresses.Count(a => a.IsEnabled && a.ReadInterval < 500);
-
-            grpScanAddresses.Text=$"扫描地址配置 (总数: {_currentConfig.ScanAddresses.Count}, 启用: {enabledCount}, 高频: {highFreqCount})";
-            }
-        private bool ValidateForm( ) {
-            if (string.IsNullOrEmpty(txtName.Text)) {
-                MessageBox.Show("请输入PLC名称","验证错误",MessageBoxButtons.OK,MessageBoxIcon.Warning);
-                return false;
-                }
-
-            if (string.IsNullOrEmpty(txtIPAddress.Text)) {
-                MessageBox.Show("请输入IP地址","验证错误",MessageBoxButtons.OK,MessageBoxIcon.Warning);
-                return false;
-                }
-
-            return true;
-            }
-
-        private void SaveFormToConfig( PLCConnectionConfig config ) {
-            config.Name=txtName.Text;
-            config.PLCType=(PLCType) cmbPLCType.SelectedItem;
-            config.IPAddress=txtIPAddress.Text;
-            config.Port=(int) numPort.Value;
-            config.SlaveID=(byte) numSlaveID.Value;
-            config.Timeout=(int) numTimeout.Value;
-            config.ByteOrder=(ByteOrderEnum) cmbByteOrder.SelectedItem;
-            config.StringByteOrder=(StringByteOrderEnum) cmbStringByteOrder.SelectedItem;
-            config.HeartbeatEnabled=chkHeartbeatEnabled.Checked;
-            config.HeartbeatInterval=(int) numHeartbeatInterval.Value;
-            config.HeartbeatAddress=txtHeartbeatAddress.Text;
-            config.IsEnabled=chkEnabled.Checked;
-            }
-
-        private void RefreshDataGridView( ) {
-            dgvPLCConfigs.Refresh( );
             }
         private void btnAdd_Click( object sender,EventArgs e ) {
             try {
@@ -598,7 +496,7 @@ namespace CosmxMESClient {
             _scanAddressesBindingSource.DataSource=_currentConfig.ScanAddresses;
             foreach (var address in _currentConfig.ScanAddresses) {
                 var item = new ListViewItem(address.Address);
-                item.SubItems.Add(GetDataTypeDisplayName(address.DataType));
+                item.SubItems.Add(PLCAddressConfig.GetDataTypeDisplayName(address.DataType));
                 item.SubItems.Add(address.Description);
                 item.SubItems.Add(address.ReadInterval.ToString( ));
                 item.SubItems.Add(address.IsEnabled ? "启用" : "禁用");
@@ -617,7 +515,7 @@ namespace CosmxMESClient {
             _sendAddressesBindingSource.DataSource=_currentConfig.SendAddresses;
             foreach (var address in _currentConfig.SendAddresses) {
                 var item = new ListViewItem(address.Address);
-                item.SubItems.Add(GetDataTypeDisplayName(address.DataType));
+                item.SubItems.Add(PLCAddressConfig.GetDataTypeDisplayName(address.DataType));
                 item.SubItems.Add(address.Description);
                 item.SubItems.Add(address.ReadInterval.ToString( ));
                 item.SubItems.Add(address.AutoSend ? "是" : "否");
@@ -644,69 +542,6 @@ namespace CosmxMESClient {
 
             grpScanAddresses.Text=$"扫描地址配置 (总数: {_currentConfig.ScanAddresses.Count}, 启用: {scanEnabledCount})";
             grpSendAddresses.Text=$"发送地址配置 (总数: {_currentConfig.SendAddresses.Count}, 启用: {sendEnabledCount})";
-            }
-        private void LoadSendAddresses( List<PLCSendAddress> addresses ) {
-
-            lvSendAddresses.Items.Clear( );
-
-            foreach (var address in addresses.OrderBy(a => a.Name)) {
-                var item = new ListViewItem(address.Key);
-                item.SubItems.Add(address.Name);
-                item.SubItems.Add(address.Address);
-                item.SubItems.Add(GetDataTypeDisplayName(address.DataType));
-                item.SubItems.Add(address.Description);
-                item.SubItems.Add(address.ReadInterval.ToString( ));
-                item.SubItems.Add(address.AutoSend ? "是" : "否");
-                item.SubItems.Add(address.SendDelay.ToString( ));
-                item.SubItems.Add(address.IsEnabled ? "启用" : "禁用");
-
-                // 设置行颜色
-                if (!address.IsEnabled)
-                    item.BackColor=Color.LightGray;
-                else if (address.AutoSend)
-                    item.BackColor=Color.LightYellow;
-
-                item.Tag=address;
-                lvSendAddresses.Items.Add(item);
-                }
-
-            UpdateSendAddressesSummary( );
-            }
-        private void UpdateSendAddressesSummary( ) {
-            if (_currentConfig==null||_currentConfig.SendAddresses==null) {
-                grpSendAddresses.Text="发送地址配置 (总数: 0, 启用: 0, 自动发送: 0)";
-                return;
-                }
-
-            var enabledCount = _currentConfig.SendAddresses.Count(a => a.IsEnabled);
-            var autoSendCount = _currentConfig.SendAddresses.Count(a => a.AutoSend && a.IsEnabled);
-
-            grpSendAddresses.Text=$"发送地址配置 (总数: {_currentConfig.SendAddresses.Count}, 启用: {enabledCount}, 自动发送: {autoSendCount})";
-            }
-        private void btnDeleteScanAddress_Click( object sender,EventArgs e ) {
-            if (lvScanAddresses.SelectedItems.Count==0)
-                return;
-
-            var address = lvScanAddresses.SelectedItems[0].Tag as PLCScanAddress;
-            if (address==null)
-                return;
-
-            var result = MessageBox.Show($"确定要删除地址 '{address.Name}' 吗？", "确认删除",
-        MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-
-            if (result==DialogResult.Yes) {
-                try {
-                    // 使用新的Remove方法
-                    if (_currentConfig.RemoveScanAddress(address.Key)) {
-                    //    LoadScanAddresses(_currentConfig.ScanAddresses());
-                        LoggingService.Info($"删除扫描地址成功: {address.Name}");
-                        }
-                    }
-                catch (Exception ex) {
-                    LoggingService.Error("删除扫描地址失败",ex);
-                    MessageBox.Show($"删除失败: {ex.Message}","错误",MessageBoxButtons.OK,MessageBoxIcon.Error);
-                    }
-                }
             }
         private void btnTestConnection_Click( object sender,EventArgs e ) {
             if (!ValidateNumericValues( )) {
@@ -739,9 +574,9 @@ namespace CosmxMESClient {
         private void btnSaveAll_Click( object sender,EventArgs e ) {
             try {
                 // 先保存当前编辑的配置
-                if (_currentConfig!=null&&ValidateForm( )) {
-                    SaveFormToConfig(_currentConfig);
-                    }
+                //if (_currentConfig!=null&&ValidateForm( )) {
+                //    SaveFormToConfig(_currentConfig);
+                //    }
 
                 // 保存所有配置到文件
                 PLCConfigManager.SaveConfigs(_plcConfigs.ToList( ));
@@ -806,44 +641,10 @@ namespace CosmxMESClient {
             string status = isAlive ? $"心跳正常 (重试: {retryCount})" : $"心跳异常: {message}";
             System.Diagnostics.Debug.WriteLine($"[Heartbeat] {status}");
             }
-        private void SetButtonsEnabled( bool enabled ) {
-            btnTestConnection.Enabled=enabled;
-            btnSaveConfig.Enabled=enabled;
-            btnAdd.Enabled=enabled;
-            btnDelete.Enabled=enabled;
-
-            // 更新按钮文本显示连接状态
-            if (_currentConfig!=null&&_currentConfig.IsConnected) {
-                btnTestConnection.Text="断开连接";
-                btnTestConnection.BackColor=Color.LightCoral;
-                }
-            else {
-                btnTestConnection.Text="测试连接";
-                btnTestConnection.BackColor=Color.LightGreen;
-                }
-            }
-        private IPlcCommunication CreatePLCFromConfig( PLCConnectionConfig config ) {
-            switch (config.PLCType) {
-                case PLCType.DeltaModbusTCP:
-                    return new CDeltaModbusTcp(config.IPAddress,config.Port,config.SlaveID)
-                        {
-                        ByteOrder=config.ByteOrder,
-                        StringByteOrder=config.StringByteOrder,
-                        Timeout=config.Timeout
-                        };
-                // 可以扩展其他PLC类型
-                default:
-                    throw new NotSupportedException($"不支持的PLC类型: {config.PLCType}");
-                }
-            }
-
         private void FormPLCConfig_FormClosing( object sender,FormClosingEventArgs e ) {
             _connectionMonitorTimer?.Stop( );
             _connectionMonitorTimer?.Dispose( );
             DisconnectAll( );
-            }
-        private void FormPLCConfig_Load( object sender,EventArgs e ) {
-
             }
         private void ClearForm( ) {
             //txtName.Text="";
@@ -861,7 +662,6 @@ namespace CosmxMESClient {
             lvScanAddresses.Items.Clear( );
             }
         }
-
     public enum PLCType {
         DeltaModbusTCP,
         MitsubishiMCProtocol,

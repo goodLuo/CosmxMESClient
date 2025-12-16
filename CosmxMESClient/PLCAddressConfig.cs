@@ -12,7 +12,7 @@ namespace CosmxMESClient {
         private string _key;
         private string _name;
         private string _address;
-        private Type _dataType;
+        private TypeCode _dataType;
         private string _description;
         private int _readInterval = 1000;
         private bool _isEnabled = true;
@@ -42,7 +42,7 @@ namespace CosmxMESClient {
                 }
             }
 
-        public Type DataType {
+        public TypeCode DataType {
             get => _dataType;
             set {
                 _dataType=value;
@@ -92,6 +92,42 @@ namespace CosmxMESClient {
         protected virtual void OnPropertyChanged( [CallerMemberName] string propertyName = null ) {
             PropertyChanged?.Invoke(this,new PropertyChangedEventArgs(propertyName));
             }
+        public static string GetDataTypeDisplayName( TypeCode dataType ) {
+            switch (dataType) {
+                case TypeCode.Boolean:
+                    return "布尔";
+                case TypeCode.Int16:
+                    return "整数(Int16)";
+                case TypeCode.Int32:
+                    return "整数(Int32)";
+                case TypeCode.Single:
+                    return "浮点数";
+                case TypeCode.Double:
+                    return "双精度";
+                case TypeCode.String:
+                    return "字符串";
+                default:
+                    return "未知";
+                }
+            }
+        public static string GetTestValueForDataType( TypeCode dataType ) {
+            switch (dataType) {
+                case TypeCode.Boolean:
+                    return "True";
+                case TypeCode.Int16:
+                    return "100";
+                case TypeCode.Int32:
+                    return "101";
+                case TypeCode.Single:
+                    return "123.45";
+                case TypeCode.Double:
+                    return "678.90";
+                case TypeCode.String:
+                    return "Test";
+                default:
+                    return "Default";
+                }
+            }
         public AddressDirection Direction {
             get; set;
             } // 地址方向
@@ -102,147 +138,11 @@ namespace CosmxMESClient {
             get; set;
             } // 验证规则
         }
+
     public enum AddressDirection {
         ReadOnly,    // 只读（扫描地址）
         WriteOnly,   // 只写（发送地址）  
         ReadWrite    // 读写
-        }
-    // 新增触发条件枚举
-    public enum TriggerCondition {
-        None,               // 无触发条件
-        ThresholdAbove,     // 阈值以上触发
-        ThresholdBelow,     // 阈值以下触发
-        ChangePercentage,   // 变化百分比触发
-        RisingEdge,         // 上升沿触发
-        FallingEdge         // 下降沿触发
-        }
-    public class PLCScanAddress:PLCAddressConfig {
-        private DateTime _lastReadTime;
-        private object _lastValue;
-        private bool _valueChanged;
-
-        // 触发条件配置
-        private TriggerCondition _triggerCondition;
-        private double _triggerThreshold;
-        private bool _triggerOnRisingEdge;
-        private bool _triggerOnFallingEdge;
-        private int _triggerDelay;
-        private bool _isTriggered;
-
-        public DateTime LastReadTime {
-            get => _lastReadTime;
-            set {
-                _lastReadTime=value;
-                OnPropertyChanged( );
-                }
-            }
-
-        public object LastValue {
-            get => _lastValue;
-            set {
-                _lastValue=value;
-                OnPropertyChanged( );
-                }
-            }
-
-        public bool ValueChanged {
-            get => _valueChanged;
-            set {
-                _valueChanged=value;
-                OnPropertyChanged( );
-                }
-            }
-
-        // 触发条件枚举
-        public TriggerCondition TriggerCondition {
-            get => _triggerCondition;
-            set {
-                _triggerCondition=value;
-                OnPropertyChanged( );
-                }
-            }
-
-        // 触发阈值
-        public double TriggerThreshold {
-            get => _triggerThreshold;
-            set {
-                _triggerThreshold=value;
-                OnPropertyChanged( );
-                }
-            }
-
-        // 上升沿触发
-        public bool TriggerOnRisingEdge {
-            get => _triggerOnRisingEdge;
-            set {
-                _triggerOnRisingEdge=value;
-                OnPropertyChanged( );
-                }
-            }
-
-        // 下降沿触发
-        public bool TriggerOnFallingEdge {
-            get => _triggerOnFallingEdge;
-            set {
-                _triggerOnFallingEdge=value;
-                OnPropertyChanged( );
-                }
-            }
-
-        // 触发延迟(ms)
-        public int TriggerDelay {
-            get => _triggerDelay;
-            set {
-                _triggerDelay=value;
-                OnPropertyChanged( );
-                }
-            }
-
-        // 当前是否已触发
-        public bool IsTriggered {
-            get => _isTriggered;
-            set {
-                _isTriggered=value;
-                OnPropertyChanged( );
-                }
-            }
-
-        // 触发条件验证方法
-        public bool CheckTriggerCondition( object newValue,object previousValue ) {
-            if (!IsEnabled||TriggerCondition==TriggerCondition.None)
-                return true;
-
-            try {
-                double newVal = Convert.ToDouble(newValue);
-                double prevVal = Convert.ToDouble(previousValue);
-
-                switch (TriggerCondition) {
-                    case TriggerCondition.ThresholdAbove:
-                        return newVal>TriggerThreshold;
-
-                    case TriggerCondition.ThresholdBelow:
-                        return newVal<TriggerThreshold;
-
-                    case TriggerCondition.ChangePercentage:
-                        if (prevVal==0)
-                            return true;
-                        double changePercent = Math.Abs((newVal - prevVal) / prevVal * 100);
-                        return changePercent>=TriggerThreshold;
-
-                    case TriggerCondition.RisingEdge:
-                        return TriggerOnRisingEdge&&newVal>prevVal;
-
-                    case TriggerCondition.FallingEdge:
-                        return TriggerOnFallingEdge&&newVal<prevVal;
-
-                    default:
-                        return true;
-                    }
-                }
-            catch {
-                return true;
-                }
-            }
         }
     public class PLCSendAddress:PLCAddressConfig {
         private string _triggerCondition;

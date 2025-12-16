@@ -310,11 +310,12 @@
             this.cmbDataType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbDataType.FormattingEnabled = true;
             this.cmbDataType.Items.AddRange(new object[] {
-            "布尔(Bool)",
-            "整数(Int32)",
-            "浮点数(Float)",
-            "双精度(Double)",
-            "字符串(String)"});
+            "Boolean",
+            "Int16",
+            "Int32",
+            "Single",
+            "Double",
+            "String"});
             this.cmbDataType.Location = new System.Drawing.Point(123, 38);
             this.cmbDataType.Name = "cmbDataType";
             this.cmbDataType.Size = new System.Drawing.Size(467, 32);
@@ -555,11 +556,18 @@
             this.cmbTriggerCondition.FormattingEnabled = true;
             this.cmbTriggerCondition.Items.AddRange(new object[] {
             "无触发条件",
-            "阈值以上触发",
-            "阈值以下触发",
-            "变化百分比触发",
+            "大于阈值触发",
+            "小于阈值触发",
+            "等于阈值触发",
+            "大于等于阈值触发",
+            "小于等于阈值触发",
+            "不等于阈值触发",
             "上升沿触发",
-            "下降沿触发"});
+            "下降沿触发",
+            "变化百分比触发",
+            "包含字符串触发",
+            "以...开始触发",
+            "以...结束触发"});
             this.cmbTriggerCondition.Location = new System.Drawing.Point(123, 3);
             this.cmbTriggerCondition.Name = "cmbTriggerCondition";
             this.cmbTriggerCondition.Size = new System.Drawing.Size(467, 32);

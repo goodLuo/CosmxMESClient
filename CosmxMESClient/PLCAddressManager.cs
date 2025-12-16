@@ -13,6 +13,9 @@ namespace CosmxMESClient {
         private Dictionary<string, PLCConnectionConfig> _plcConfigs = new Dictionary<string, PLCConnectionConfig>();
         private readonly object _lock = new object();
 
+        // 触发条件管理器
+        private TriggerConditionManager _triggerManager = new TriggerConditionManager();
+
         // 主程序调用接口
         public bool RegisterPLCConfig( PLCConnectionConfig config ) {
             lock (_lock) {
@@ -22,169 +25,138 @@ namespace CosmxMESClient {
                     }
 
                 _plcConfigs[config.Key]=config;
+
+                // 注册到触发条件管理器
+                _triggerManager.RegisterPLC(config);
+
                 LoggingService.Info($"注册PLC配置: {config.Name} (Key: {config.Key})");
                 return true;
                 }
             }
 
-        // 添加方法：根据地址键值读取数据
-        public async Task<object> ReadAddressAsync( string plcKey,string addressKey ) {
-            if (!_plcConfigs.TryGetValue(plcKey,out var config)) {
-                throw new ArgumentException($"未找到PLC配置: {plcKey}");
-                }
-
-            // 查找地址配置
-            var address = config.ScanAddresses.FirstOrDefault(a => a.Key == addressKey);
-            if (address==null) {
-                throw new ArgumentException($"未找到地址配置: {addressKey}");
-                }
-
-            return await ReadAddressInternal(config,address);
-            }
-
-        // 添加方法：写入数据到指定地址
-        public async Task<bool> WriteAddressAsync( string plcKey,string addressKey,object value ) {
-            if (!_plcConfigs.TryGetValue(plcKey,out var config)) {
-                throw new ArgumentException($"未找到PLC配置: {plcKey}");
-                }
-
-            // 查找地址配置
-            var address = config.SendAddresses.FirstOrDefault(a => a.Key == addressKey);
-            if (address==null) {
-                throw new ArgumentException($"未找到地址配置: {addressKey}");
-                }
-
-            return await WriteAddressInternal(config,address,value);
-            }
-
-        //// 获取所有地址键值
-        //public List<string> GetAllAddressKeys( string plcKey ) {
-        //    if (!_plcConfigs.TryGetValue(plcKey,out var config)) {
-        //        return new List<string>( );
-        //        }
-
-        //    var keys = new List<string>();
-        //    keys.AddRange(config.ScanAddresses.Keys);
-        //    keys.AddRange(config.SendAddresses.Keys);
-
-        //    return keys;
-        //    }
-
-        private async Task<object> ReadAddressInternal( PLCConnectionConfig config,PLCScanAddress address ) {
-            if (config.PLCInstance==null||!config.PLCInstance.IsConnected)
-                throw new InvalidOperationException("PLC未连接");
-
-            return await Task.Run<object>(( ) =>
-            {
-                object newValue = ReadValueByDataType(config, address);
-
-                // 检查触发条件
-                if (!CheckTriggerCondition(address,newValue)) {
-                    return null; // 条件不满足，返回null
+        public bool UnregisterPLCConfig( string plcKey ) {
+            lock (_lock) {
+                if (_plcConfigs.ContainsKey(plcKey)) {
+                    _triggerManager.UnregisterPLC(plcKey);
+                    _plcConfigs.Remove(plcKey);
+                    LoggingService.Info($"取消注册PLC配置: {plcKey}");
+                    return true;
                     }
+                return false;
+                }
+            }
 
-                address.LastValue=newValue;
-                address.IsTriggered=true;
+        // 增强的读取方法，支持触发条件检查
+        public async Task<object> ReadAddressInternal( PLCConnectionConfig config,PLCScanAddress address,object newValue,TypeCode typeCode ) {
+            if (config.PLCInstance==null) {
+                throw new InvalidOperationException("PLC未连接");
+                }
+            return await Task.Run<object>(( ) => {
+                try {
+                    // 检查触发条件
+                    bool shouldRead = CheckTriggerCondition(address, newValue);
+                    if (!shouldRead) {
+                        return null; // 条件不满足，返回null
+                        }
+                    // 更新地址状态
+                    address.LastValue=newValue;
+                    address.LastReadTime=DateTime.Now;
 
-                return newValue;
+                    // 如果触发了条件，执行清空动作
+                    if (address.IsTriggered) {
+                        var cc= ExecuteClearActionAsync(config,address,typeCode);
+                        }
+                    return newValue;
+                    }
+                catch (Exception ex) {
+                    LoggingService.Error($"读取地址失败: {address.Address}",ex);
+                    throw;
+                    }
             });
             }
+
+        // 增强的触发条件检查
         private bool CheckTriggerCondition( PLCScanAddress address,object newValue ) {
             // 无触发条件或首次读取时直接通过
-            if (address.TriggerCondition==TriggerCondition.None||address.LastValue==null)
+            if (address.TriggerCondition==TriggerCondition.None||address.LastValue==null) {
                 return true;
+                }
 
-            return address.CheckTriggerCondition(newValue,address.LastValue);
+            bool triggered = address.CheckTriggerCondition(newValue, address.LastValue);
+            return triggered;
             }
-
-        private object ReadValueByDataType( PLCConnectionConfig config,PLCScanAddress address ) {
-            switch (address.DataType.Name) {
-                case nameof(Boolean):
-                    bool boolValue = false;
-                    if (config.PLCInstance.ReadCoil(address.Address,ref boolValue))
-                        return boolValue;
-                    break;
-
-                case nameof(Int32):
-                    int intValue = 0;
-                    if (config.PLCInstance.ReadRegister(address.Address,ref intValue))
-                        return intValue;
-                    break;
-
-                case nameof(Single):
-                    float floatValue = 0;
-                    if (config.PLCInstance.ReadFloat(address.Address,ref floatValue))
-                        return floatValue;
-                    break;
-
-                case nameof(Double):
-                    double doubleValue = 0;
-                    if (config.PLCInstance.ReadDouble(address.Address,address.Power,ref doubleValue))
-                        return doubleValue;
-                    break;
-
-                case nameof(String):
-                    string stringValue = "";
-                    if (config.PLCInstance.ReadString(address.Address,ref stringValue,address.Length))
-                        return stringValue;
-                    break;
-                }
-            throw new Exception($"读取地址失败: {address.Address}");
-            }
-        private async Task<bool> WriteAddressInternal( PLCConnectionConfig config,PLCSendAddress address,object value ) {
-            if (config.PLCInstance==null||!config.PLCInstance.IsConnected) {
-                throw new InvalidOperationException("PLC未连接");
+        //清空动作
+        private async Task<bool> ExecuteClearActionAsync( PLCConnectionConfig config,PLCScanAddress address,TypeCode action ) {
+            // 检查PLC实例是否存在，如果不存在则创建
+            if (config.PLCInstance==null) {
+                LoggingService.Warn($"PLC实例为空，尝试创建实例: {config.Name}");
+                config.CreatePLCInstance( );
                 }
 
-            // 数据验证
-            if (!ValidateValue(address,value)) {
-                throw new ArgumentException($"值验证失败: {value}");
-                }
-            return await Task.Run<bool>(( ) => {
-                // 根据数据类型调用相应的写入方法
-                switch (address.DataType.Name) {
-                    case nameof(Boolean):
-                        if (value is bool boolValue)
-                            return config.PLCInstance.WriteCoil(address.Address,boolValue);
-                        break;
-
-                    case nameof(Int32):
-                        if (value is int intValue)
-                            return config.PLCInstance.WriteRegister(address.Address,intValue);
-                        break;
-
-                    case nameof(Single):
-                        if (value is float floatValue)
-                            return config.PLCInstance.WriteFloat(address.Address,floatValue);
-                        break;
-
-                    case nameof(Double):
-                        if (value is double doubleValue)
-                            return config.PLCInstance.WriteDouble(address.Address,address.Power,doubleValue);
-                        break;
-
-                    case nameof(String):
-                        if (value is string stringValue)
-                            return config.PLCInstance.WriteString(address.Address,stringValue);
-                        break;
+            // 检查连接状态，如果未连接则尝试连接
+            if (!config.IsConnected) {
+                LoggingService.Warn($"PLC未连接，尝试连接: {config.Name}");
+                bool connected = await Task.Run(() => config.Connect());
+                if (!connected) {
+                    LoggingService.Error($"无法执行清空动作: PLC连接失败 - {config.Name}");
+                    return false;
                     }
+                }
 
-                throw new Exception($"写入地址失败: {address.Address}");
+            if (address.Address==null||!address.IsEnabled)
+                return false;
+
+            return await Task.Run(( ) => {
+                try {
+                    switch (action) {
+                        case TypeCode.Boolean:
+                            bool boolValue = false;
+                            return config.PLCInstance.WriteRegisterBit(address.Address,boolValue);
+                        case TypeCode.Int16:
+                            int shortValue = 0;
+                            return config.PLCInstance.WriteRegister(address.Address,shortValue);
+                        case TypeCode.Int32:
+                            int intValue = 0;
+                            return config.PLCInstance.WriteInt32(address.Address,intValue);
+                        case TypeCode.Single:
+                            float floatValue = 0;
+                            return config.PLCInstance.WriteFloat(address.Address,floatValue);
+                        case TypeCode.Double:
+                            double doubleValue =0;
+                            return config.PLCInstance.WriteDouble(address.Address,1,doubleValue); // 默认power=1
+                        case TypeCode.String:
+                            string stringValue = "";
+                            return config.PLCInstance.WriteString(address.Address,stringValue);
+                        default:
+                            return false;
+                        }
+                    }
+                catch (Exception ex) {
+                    LoggingService.Error($"执行清空动作失败: {address.Address}",ex);
+                    return false;
+                    }
             });
             }
+        // 触发条件管理器
+        public class TriggerConditionManager {
+            private Dictionary<string, List<PLCScanAddress>> _plcTriggers = new Dictionary<string, List<PLCScanAddress>>();
 
-        private bool ValidateValue( PLCSendAddress address,object value ) {
-            // 这里可以添加更复杂的验证逻辑
-            if (value==null)
-                return false;
+            public void RegisterPLC( PLCConnectionConfig config ) {
+                if (!_plcTriggers.ContainsKey(config.Key)) {
+                    _plcTriggers[config.Key]=new List<PLCScanAddress>( );
+                    }
 
-            // 基本类型验证
-            try {
-                Convert.ChangeType(value,address.DataType);
-                return true;
+                // 添加有触发条件的地址
+                var triggerAddresses = config.ScanAddresses.Where(a => a.TriggerCondition != TriggerCondition.None).ToList();
+                _plcTriggers[config.Key].AddRange(triggerAddresses);
                 }
-            catch {
-                return false;
+
+            public void UnregisterPLC( string plcKey ) {
+                _plcTriggers.Remove(plcKey);
+                }
+
+            public List<PLCScanAddress> GetTriggerAddresses( string plcKey ) {
+                return _plcTriggers.TryGetValue(plcKey,out var addresses) ? addresses : new List<PLCScanAddress>( );
                 }
             }
         }

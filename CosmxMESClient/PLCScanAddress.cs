@@ -1,0 +1,378 @@
+﻿using CosmxMESClient.Services;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace CosmxMESClient {
+    public class PLCScanAddress:PLCAddressConfig, INotifyPropertyChanged {
+        private DateTime _lastReadTime;
+        private object _lastValue;
+        private bool _valueChanged;
+        private bool _isTriggered;
+        private DateTime _lastTriggerTime;
+        private List<AddressClearAction> _clearActions = new List<AddressClearAction>();
+
+        // 触发条件配置
+        private TriggerCondition _triggerCondition;
+        private double _triggerThreshold;
+        private double _triggerTolerance = 0.001; // 浮点数比较容差
+        private bool _triggerOnRisingEdge;
+        private bool _triggerOnFallingEdge;
+        private int _triggerDelay;
+        private int _triggerCount;
+        private int _maxTriggerCount = 0; // 0表示无限制
+
+        public DateTime LastReadTime {
+            get => _lastReadTime;
+            set {
+                _lastReadTime=value;
+                OnPropertyChanged( );
+                }
+            }
+
+        public object LastValue {
+            get => _lastValue;
+            set {
+                var oldValue = _lastValue;
+                _lastValue=value;
+                OnPropertyChanged( );
+
+                // 检查值变化
+                ValueChanged=!Equals(oldValue,value);
+                }
+            }
+
+        public bool ValueChanged {
+            get => _valueChanged;
+            set {
+                _valueChanged=value;
+                OnPropertyChanged( );
+                }
+            }
+
+        // 触发条件
+        public TriggerCondition TriggerCondition {
+            get => _triggerCondition;
+            set {
+                _triggerCondition=value;
+                OnPropertyChanged( );
+                }
+            }
+
+        public double TriggerThreshold {
+            get => _triggerThreshold;
+            set {
+                _triggerThreshold=value;
+                OnPropertyChanged( );
+                }
+            }
+
+        public double TriggerTolerance {
+            get => _triggerTolerance;
+            set {
+                _triggerTolerance=value;
+                OnPropertyChanged( );
+                }
+            }
+
+        public bool TriggerOnRisingEdge {
+            get => _triggerOnRisingEdge;
+            set {
+                _triggerOnRisingEdge=value;
+                OnPropertyChanged( );
+                }
+            }
+
+        public bool TriggerOnFallingEdge {
+            get => _triggerOnFallingEdge;
+            set {
+                _triggerOnFallingEdge=value;
+                OnPropertyChanged( );
+                }
+            }
+
+        public int TriggerDelay {
+            get => _triggerDelay;
+            set {
+                _triggerDelay=value;
+                OnPropertyChanged( );
+                }
+            }
+
+        public int TriggerCount {
+            get => _triggerCount;
+            set {
+                _triggerCount=value;
+                OnPropertyChanged( );
+                }
+            }
+
+        public int MaxTriggerCount {
+            get => _maxTriggerCount;
+            set {
+                _maxTriggerCount=value;
+                OnPropertyChanged( );
+                }
+            }
+
+        public bool IsTriggered {
+            get => _isTriggered;
+            set {
+                _isTriggered=value;
+                OnPropertyChanged( );
+                }
+            }
+
+        public DateTime LastTriggerTime {
+            get => _lastTriggerTime;
+            set {
+                _lastTriggerTime=value;
+                OnPropertyChanged( );
+                }
+            }
+
+        // 清空动作列表
+        public List<AddressClearAction> ClearActions {
+            get => _clearActions;
+            set {
+                _clearActions=value;
+                OnPropertyChanged( );
+                }
+            }
+
+        // 增强的触发条件检查方法
+        public bool CheckTriggerCondition( object newValue,object previousValue ) {
+            if (!IsEnabled||TriggerCondition==TriggerCondition.None)
+                return true;
+
+            // 检查触发次数限制
+            if (MaxTriggerCount>0&&TriggerCount>=MaxTriggerCount)
+                return false;
+
+            // 检查触发延迟
+            if (TriggerDelay>0&&( DateTime.Now-LastTriggerTime ).TotalMilliseconds<TriggerDelay)
+                return false;
+
+            bool triggered = false;
+
+            try {
+                // 根据数据类型调用相应的触发检查
+                switch (DataType) {
+                    case TypeCode.Boolean:
+                        triggered=CheckBooleanTrigger(newValue,previousValue);
+                        break;
+                    case TypeCode.Int16:
+                        triggered=CheckNumericTrigger(newValue,previousValue);
+                        break;
+                    case TypeCode.Int32:
+                        triggered=CheckNumericTrigger(newValue,previousValue);
+                        break;
+                    case TypeCode.Single:
+                        triggered=CheckNumericTrigger(newValue,previousValue);
+                        break;
+                    case TypeCode.Double:
+                        triggered=CheckNumericTrigger(newValue,previousValue);
+                        break;
+                    case TypeCode.String:
+                        triggered=CheckStringTrigger(newValue,previousValue);
+                        break;
+                    default:
+                        triggered=true; // 未知类型默认通过
+                        break;
+                    }
+                }
+            catch (Exception ex) {
+                LoggingService.Error($"触发条件检查异常: {ex.Message}");
+                triggered=false;
+                }
+
+            if (triggered) {
+                TriggerCount++;
+                LastTriggerTime=DateTime.Now;
+                IsTriggered=true;
+
+                // 记录触发日志
+                LoggingService.Info($"触发条件满足 - 地址: {Name}, 新值: {newValue}, 旧值: {previousValue}, 条件: {TriggerCondition}");
+                }
+
+            return triggered;
+            }
+
+        private bool CheckBooleanTrigger( object newValue,object previousValue ) {
+            bool newBool = Convert.ToBoolean(newValue);
+            bool prevBool = Convert.ToBoolean(previousValue);
+
+            switch (TriggerCondition) {
+                case TriggerCondition.RisingEdge:
+                    return TriggerOnRisingEdge&&!prevBool&&newBool;
+                case TriggerCondition.FallingEdge:
+                    return TriggerOnFallingEdge&&prevBool&&!newBool;
+                case TriggerCondition.Equal:
+                    return newBool==Convert.ToBoolean(TriggerThreshold);
+                default:
+                    return true; // 布尔类型只支持边沿触发和等于
+                }
+            }
+
+        private bool CheckNumericTrigger( object newValue,object previousValue ) {
+            double newNum = Convert.ToDouble(newValue);
+            double prevNum = Convert.ToDouble(previousValue);
+            double threshold = TriggerThreshold;
+
+            switch (TriggerCondition) {
+                case TriggerCondition.GreaterThan:
+                    return newNum>threshold;
+                case TriggerCondition.LessThan:
+                    return newNum<threshold;
+                case TriggerCondition.Equal:
+                    return Math.Abs(newNum-threshold)<=TriggerTolerance;
+                case TriggerCondition.GreaterThanOrEqual:
+                    return newNum>=threshold;
+                case TriggerCondition.LessThanOrEqual:
+                    return newNum<=threshold;
+                case TriggerCondition.NotEqual:
+                    return Math.Abs(newNum-threshold)>TriggerTolerance;
+                case TriggerCondition.RisingEdge:
+                    return TriggerOnRisingEdge&&newNum>prevNum;
+                case TriggerCondition.FallingEdge:
+                    return TriggerOnFallingEdge&&newNum<prevNum;
+                case TriggerCondition.ChangePercentage:
+                    if (prevNum==0)
+                        return newNum!=0;
+                    double changePercent = Math.Abs((newNum - prevNum) / prevNum * 100);
+                    return changePercent>=threshold;
+                default:
+                    return true;
+                }
+            }
+
+        private bool CheckStringTrigger( object newValue,object previousValue ) {
+            string newStr = newValue?.ToString() ?? "";
+            string prevStr = previousValue?.ToString() ?? "";
+
+            switch (TriggerCondition) {
+                case TriggerCondition.Equal:
+                    return newStr.Equals(prevStr,StringComparison.Ordinal);
+                case TriggerCondition.NotEqual:
+                    return !newStr.Equals(prevStr,StringComparison.Ordinal);
+                case TriggerCondition.Contains:
+                    return newStr.Contains(TriggerThreshold.ToString( ));
+                case TriggerCondition.StartsWith:
+                    return newStr.StartsWith(TriggerThreshold.ToString( ));
+                case TriggerCondition.EndsWith:
+                    return newStr.EndsWith(TriggerThreshold.ToString( ));
+                default:
+                    return true; // 字符串类型只支持字符串比较
+                }
+            }
+
+        // 重置触发状态
+        public void ResetTrigger( ) {
+            TriggerCount=0;
+            IsTriggered=false;
+            LastTriggerTime=DateTime.MinValue;
+            }
+
+        // 添加清空动作
+        public void AddClearAction( string address,object clearValue ) {
+            ClearActions.Add(new AddressClearAction
+                {
+                Address=address,
+                ClearValue=clearValue,
+                DataType=DataType
+                });
+            }
+
+        // 执行清空动作
+        public async Task<bool> ExecuteClearActionsAsync( PLCConnectionConfig config ) {
+            try {
+                foreach (var action in ClearActions) {
+                    await ExecuteClearActionAsync(config,action);
+                    }
+                return true;
+                }
+            catch (Exception ex) {
+                System.Diagnostics.Debug.WriteLine($"执行清空动作失败: {ex.Message}");
+                return false;
+                }
+            }
+
+        private async Task<bool> ExecuteClearActionAsync( PLCConnectionConfig config,AddressClearAction action ) {
+            if (config.PLCInstance==null||!config.PLCInstance.IsConnected)
+                return false;
+
+            return await Task.Run(( ) => {
+                try {
+                    switch (action.DataType) {
+                        case TypeCode.Boolean:
+                            bool boolValue = Convert.ToBoolean(action.ClearValue);
+                            return config.PLCInstance.WriteCoil(action.Address,boolValue);
+                        case TypeCode.Int16:
+                            int intValue = Convert.ToInt32(action.ClearValue);
+                            return config.PLCInstance.WriteRegister(action.Address,intValue);
+                        case TypeCode.Int32:
+                            int int32Value = Convert.ToInt32(action.ClearValue);
+                            return config.PLCInstance.WriteInt32(action.Address,int32Value);
+                        case TypeCode.Single:
+                            float floatValue = Convert.ToSingle(action.ClearValue);
+                            return config.PLCInstance.WriteFloat(action.Address,floatValue);
+                        case TypeCode.Double:
+                            double doubleValue = Convert.ToDouble(action.ClearValue);
+                            return config.PLCInstance.WriteDouble(action.Address,Power,doubleValue);
+                        case TypeCode.String:
+                            string stringValue = action.ClearValue?.ToString() ?? "";
+                            return config.PLCInstance.WriteString(action.Address,stringValue);
+                        default:
+                            return false;
+                        }
+                    }
+                catch {
+                    return false;
+                    }
+            });
+            }
+
+        protected virtual void OnPropertyChanged( [CallerMemberName] string propertyName = null ) {
+            PropertyChanged?.Invoke(this,new PropertyChangedEventArgs(propertyName));
+            }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        }
+
+    // 清空动作类
+    public class AddressClearAction {
+        public string Address {
+            get; set;
+            }
+        public object ClearValue {
+            get; set;
+            }
+        public TypeCode DataType {
+            get; set;
+            }
+        public string Description {
+            get; set;
+            }
+        }
+
+    // 增强的触发条件枚举
+    public enum TriggerCondition {
+        None,                   // 无触发条件
+        GreaterThan,           // 大于
+        LessThan,              // 小于
+        Equal,                 // 等于
+        GreaterThanOrEqual,    // 大于等于
+        LessThanOrEqual,       // 小于等于
+        NotEqual,              // 不等于
+        RisingEdge,            // 上升沿
+        FallingEdge,           // 下降沿
+        ChangePercentage,      // 变化百分比
+        Contains,              // 包含（字符串）
+        StartsWith,            // 以...开始（字符串）
+        EndsWith               // 以...结束（字符串）
+        }
+    }

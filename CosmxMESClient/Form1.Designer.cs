@@ -62,8 +62,8 @@
             this.lblBaseUrl = new System.Windows.Forms.Label();
             this.grpCardCheck = new System.Windows.Forms.GroupBox();
             this.tableLayoutPanel4 = new System.Windows.Forms.TableLayoutPanel();
-            this.txtResult = new System.Windows.Forms.TextBox();
             this.lblCardNo = new System.Windows.Forms.Label();
+            this.txtResult = new System.Windows.Forms.TextBox();
             this.txtCardNo = new System.Windows.Forms.TextBox();
             this.btnCardCheck = new System.Windows.Forms.Button();
             this.lblProcName = new System.Windows.Forms.Label();
@@ -523,6 +523,17 @@
             this.tableLayoutPanel4.Size = new System.Drawing.Size(866, 225);
             this.tableLayoutPanel4.TabIndex = 6;
             // 
+            // lblCardNo
+            // 
+            this.lblCardNo.AutoSize = true;
+            this.lblCardNo.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblCardNo.Location = new System.Drawing.Point(3, 3);
+            this.lblCardNo.Margin = new System.Windows.Forms.Padding(3);
+            this.lblCardNo.Name = "lblCardNo";
+            this.lblCardNo.Size = new System.Drawing.Size(54, 34);
+            this.lblCardNo.TabIndex = 0;
+            this.lblCardNo.Text = "卡号:";
+            // 
             // txtResult
             // 
             this.tableLayoutPanel4.SetColumnSpan(this.txtResult, 5);
@@ -534,17 +545,6 @@
             this.txtResult.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.txtResult.Size = new System.Drawing.Size(860, 179);
             this.txtResult.TabIndex = 5;
-            // 
-            // lblCardNo
-            // 
-            this.lblCardNo.AutoSize = true;
-            this.lblCardNo.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblCardNo.Location = new System.Drawing.Point(3, 3);
-            this.lblCardNo.Margin = new System.Windows.Forms.Padding(3);
-            this.lblCardNo.Name = "lblCardNo";
-            this.lblCardNo.Size = new System.Drawing.Size(54, 34);
-            this.lblCardNo.TabIndex = 0;
-            this.lblCardNo.Text = "卡号:";
             // 
             // txtCardNo
             // 

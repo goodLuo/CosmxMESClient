@@ -19,7 +19,6 @@ namespace CosmxMESClient {
                     {
                     WriteIndented = true,
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                    Converters = { new TypeConverter() }
                     };
 
                 var json = JsonSerializer.Serialize(configs, options);
@@ -30,7 +29,6 @@ namespace CosmxMESClient {
                     MessageBoxButtons.OK,MessageBoxIcon.Error);
                 }
             }
-
         public static List<PLCConnectionConfig> LoadConfigs( ) {
             try {
                 if (File.Exists(ConfigFilePath)) {
@@ -38,7 +36,6 @@ namespace CosmxMESClient {
                     var options = new JsonSerializerOptions
                         {
                         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                        Converters = { new TypeConverter() }
                         };
 
                     return JsonSerializer.Deserialize<List<PLCConnectionConfig>>(json,options)
@@ -51,18 +48,6 @@ namespace CosmxMESClient {
                 }
 
             return new List<PLCConnectionConfig>( );
-            }
-
-        // Type转换器用于JSON序列化
-        private class TypeConverter:JsonConverter<Type> {
-            public override Type Read( ref Utf8JsonReader reader,Type typeToConvert,JsonSerializerOptions options ) {
-                var typeName = reader.GetString();
-                return Type.GetType(typeName)??typeof(int);
-                }
-
-            public override void Write( Utf8JsonWriter writer,Type value,JsonSerializerOptions options ) {
-                writer.WriteStringValue(value.AssemblyQualifiedName);
-                }
             }
         }
     }

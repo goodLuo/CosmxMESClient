@@ -68,30 +68,46 @@ namespace CosmxMESClient {
                 lblSendDelay.Visible=true;
                 numSendDelay.Visible=true;
                 }
-
-            // 初始化数据类型下拉框
-              InitializeDataTypeComboBox( );
             }
-        private void InitializeDataTypeComboBox( ) {
-            cmbDataType.Items.Clear( );
-            var dataTypes = new[]
-        {
-            new ComboBoxItem { Text = "布尔(Bool)", Value = typeof(bool) },
-            new ComboBoxItem { Text = "整数(Int32)", Value = typeof(int) },
-            new ComboBoxItem { Text = "浮点数(Float)", Value = typeof(float) },
-            new ComboBoxItem { Text = "双精度(Double)", Value = typeof(double) },
-            new ComboBoxItem { Text = "字符串(String)", Value = typeof(string) }
-        };
+        private void UpdateTriggerControlsVisibility( ) {
+            int selectedIndex = cmbTriggerCondition.SelectedIndex;
 
-            cmbDataType.Items.AddRange(dataTypes);
-            cmbDataType.DisplayMember="Text";
-            cmbDataType.ValueMember="Value";
+            // 根据选择的触发条件显示/隐藏相关控件
+            bool showThreshold = selectedIndex >= 1 && selectedIndex <= 6; // 阈值相关条件
+            bool showEdgeTrigger = selectedIndex == 7 || selectedIndex == 8; // 边沿触发
+            bool showPercentage = selectedIndex == 9; // 百分比触发
+            bool showStringConditions = selectedIndex >= 10 && selectedIndex <= 12; // 字符串条件
 
-            if (cmbDataType.Items.Count>0)
-                cmbDataType.SelectedIndex=0;
+            lblTriggerThreshold.Visible=showThreshold||showPercentage;
+            numTriggerThreshold.Visible=lblTriggerThreshold.Visible;
+
+            chkTriggerRisingEdge.Visible=showEdgeTrigger;
+            chkTriggerFallingEdge.Visible=showEdgeTrigger;
+
+            lblTriggerDelay.Visible=selectedIndex!=0;
+            numTriggerDelay.Visible=selectedIndex!=0;
+
+            // 更新标签文本
+            if (showPercentage) {
+                lblTriggerThreshold.Text="变化百分比(%):";
+                numTriggerThreshold.DecimalPlaces=2;
+                numTriggerThreshold.Increment=0.1m;
+                }
+            else if (showThreshold) {
+                lblTriggerThreshold.Text="触发阈值:";
+                numTriggerThreshold.DecimalPlaces=3;
+                numTriggerThreshold.Increment=0.001m;
+                }
             }
         private void FormPLCAddressConfig_Load( object sender,EventArgs e ) {
-            LoadFormData( );
+            try {
+                LoadFormData( );
+                }
+            catch (Exception ex) {
+                LoggingService.Error("窗体加载失败",ex);
+                MessageBox.Show($"窗体初始化失败: {ex.Message}","错误",
+                    MessageBoxButtons.OK,MessageBoxIcon.Error);
+                }
             }
 
         private void LoadAddresses( ) {
@@ -101,11 +117,6 @@ namespace CosmxMESClient {
             IEnumerable<PLCAddressConfig> addresses;
             if (_currentDirection==AddressDirection.ReadOnly) {
                 addresses=_currentConfig.ScanAddresses.Cast<PLCAddressConfig>( );
-
-                //// 添加触发状态列
-                //if (!lvAddresses.Columns.ContainsKey("触发状态")) {
-                //    lvAddresses.Columns.Add("触发状态",80);
-                //    }
                 }
             else {
                 addresses=_currentConfig.SendAddresses.Cast<PLCAddressConfig>( );
@@ -115,7 +126,7 @@ namespace CosmxMESClient {
                 var item = new ListViewItem(address.Key);
                 item.SubItems.Add(address.Name);
                 item.SubItems.Add(address.Address);
-                item.SubItems.Add(GetDataTypeDisplayName(address.DataType));
+                item.SubItems.Add(PLCAddressConfig.GetDataTypeDisplayName(address.DataType));
                 item.SubItems.Add(address.Description);
                 item.SubItems.Add(address.ReadInterval.ToString( ));
                 item.SubItems.Add(address.IsEnabled ? "启用" : "禁用");
@@ -162,38 +173,36 @@ namespace CosmxMESClient {
         private string GetTriggerConditionDisplay( TriggerCondition condition ) {
             switch (condition) {
                 case TriggerCondition.None:
-                    return "无";
-                case TriggerCondition.ThresholdAbove:
-                    return "阈值以上";
-                case TriggerCondition.ThresholdBelow:
-                    return "阈值以下";
+                    return "无触发条件";
+                case TriggerCondition.GreaterThan:
+                    return "大于阈值";
+                case TriggerCondition.LessThan:
+                    return "小于阈值";
+                case TriggerCondition.Equal:
+                    return "等于阈值";
+                case TriggerCondition.GreaterThanOrEqual:
+                    return "大于等于阈值";
+                case TriggerCondition.LessThanOrEqual:
+                    return "小于等于阈值";
+                case TriggerCondition.NotEqual:
+                    return "不等于阈值";
+                case TriggerCondition.RisingEdge:
+                    return "上升沿触发";
+                case TriggerCondition.FallingEdge:
+                    return "下降沿触发";
                 case TriggerCondition.ChangePercentage:
                     return "变化百分比";
-                case TriggerCondition.RisingEdge:
-                    return "上升沿";
-                case TriggerCondition.FallingEdge:
-                    return "下降沿";
+                case TriggerCondition.Contains:
+                    return "包含字符串";
+                case TriggerCondition.StartsWith:
+                    return "以...开始";
+                case TriggerCondition.EndsWith:
+                    return "以...结束";
                 default:
-                    return "未知";
+                    return "未知条件";
                 }
             }
-        private string GetDataTypeDisplayName( Type dataType ) {
-            if (dataType==null)
-                return "未知";
 
-            if (dataType==typeof(bool))
-                return "布尔";
-            if (dataType==typeof(int))
-                return "整数";
-            if (dataType==typeof(float))
-                return "浮点数";
-            if (dataType==typeof(double))
-                return "双精度";
-            if (dataType==typeof(string))
-                return "字符串";
-
-            return dataType.Name;
-            }
         private void LoadFormData( ) {
             if (_currentAddress==null) {
                 _currentAddress=CreateNewAddress( );
@@ -209,18 +218,12 @@ namespace CosmxMESClient {
             chkEnabled.Checked=_currentAddress.IsEnabled;
 
             // 设置数据类型
-            if (_currentAddress.DataType!=null) {
-                foreach (ComboBoxItem item in cmbDataType.Items) {
-                    if (item.Value==_currentAddress.DataType) {
-                        cmbDataType.SelectedItem=item;
-                        break;
-                        }
-                    }
-                }
-            else {
-                // 设置默认数据类型
-                cmbDataType.SelectedIndex=0;
-                }
+            //foreach (ComboBoxItem item in cmbDataType.Items) {
+            //    if (Enum.TryParse(item.Text,out TypeCode result)) {
+            //        cmbDataType.SelectedItem=result;
+            //        break;
+            //        }
+            //    }
 
             // 如果是发送地址，设置特有属性
             if (_currentAddress is PLCSendAddress sendAddress) {
@@ -254,10 +257,12 @@ namespace CosmxMESClient {
 
             // 保存数据类型
             if (cmbDataType.SelectedItem is ComboBoxItem selectedItem) {
-                _currentAddress.DataType=selectedItem.Value;
-                }
-            else {
-                _currentAddress.DataType=typeof(int); // 默认类型
+                if (Enum.TryParse(selectedItem.Text,out TypeCode result)) {
+                    cmbDataType.SelectedItem=result;
+                    }
+                else {
+                    cmbDataType.SelectedItem=TypeCode.Int16;
+                    }
                 }
 
             // 如果是发送地址，保存特有属性
@@ -284,7 +289,7 @@ namespace CosmxMESClient {
                     {
                     Name=$"扫描地址_{DateTime.Now:HHmmss}",
                     Address="D100", // 默认扫描地址
-                    DataType=typeof(int),
+                    DataType=TypeCode.Int16,
                     Description="",
                     ReadInterval=1000,
                     Power=1,
@@ -303,7 +308,7 @@ namespace CosmxMESClient {
                     {
                     Name=$"发送地址_{DateTime.Now:HHmmss}",
                     Address="D200", // 默认发送地址
-                    DataType=typeof(int),
+                    DataType=TypeCode.Int16,
                     Description="",
                     ReadInterval=1000,
                     Power=1,
@@ -313,7 +318,7 @@ namespace CosmxMESClient {
                     SendDelay=0
                     };
                 }
-                return newAddress;
+            return newAddress;
             }
         private void btnAdd_Click( object sender,EventArgs e ) {
             if (!ValidateForm( ))
@@ -357,22 +362,6 @@ namespace CosmxMESClient {
         // 触发条件选择变化事件
         private void cmbTriggerCondition_SelectedIndexChanged( object sender,EventArgs e ) {
             UpdateTriggerControlsVisibility( );
-            }
-
-        private void UpdateTriggerControlsVisibility( ) {
-            var condition = (TriggerCondition)cmbTriggerCondition.SelectedIndex;
-
-            // 根据选择的触发条件显示/隐藏相关控件
-            lblTriggerThreshold.Visible=condition==TriggerCondition.ThresholdAbove||
-                                        condition==TriggerCondition.ThresholdBelow||
-                                        condition==TriggerCondition.ChangePercentage;
-            numTriggerThreshold.Visible=lblTriggerThreshold.Visible;
-
-            chkTriggerRisingEdge.Visible=condition==TriggerCondition.RisingEdge;
-            chkTriggerFallingEdge.Visible=condition==TriggerCondition.FallingEdge;
-
-            lblTriggerDelay.Visible=condition!=TriggerCondition.None;
-            numTriggerDelay.Visible=condition!=TriggerCondition.None;
             }
 
         private void btnEdit_Click( object sender,EventArgs e ) {
@@ -507,18 +496,23 @@ namespace CosmxMESClient {
                 LoggingService.Error("触发条件测试失败",ex);
                 }
             }
-        private object GenerateTestValue( Type dataType,int iteration ) {
-            switch (dataType.Name) {
-                case nameof(Boolean):
+        private object GenerateTestValue( TypeCode dataType,int iteration ) {
+            switch (dataType) {
+                case TypeCode.Boolean:
                     return iteration%2==0;
-                case nameof(Int32):
+                case TypeCode.Int16:
+                    return iteration*5;
+                case TypeCode.Int32:
                     return iteration*10;
-                case nameof(Single):
+                case TypeCode.Single:
+                    return iteration*1f;
+                case TypeCode.Double:
                     return iteration*1.5f;
                 default:
                     return iteration;
                 }
             }
+
         private async void TestWriteAddress( ) {
             if (_currentAddress==null||_currentConfig==null) {
                 MessageBox.Show("请先配置地址和PLC连接","提示",
@@ -528,11 +522,11 @@ namespace CosmxMESClient {
 
             try {
                 // 测试发送地址的写入功能
-                string testValue = GetTestValueForDataType();
+                string testValue = PLCAddressConfig.GetTestValueForDataType(_currentAddress.DataType);
 
                 var result = MessageBox.Show($"测试写入地址：{_currentAddress.Address}\n\n" +
             $"写入值：{testValue}\n" +
-            $"数据类型：{GetDataTypeDisplayName(_currentAddress.DataType)}\n" +
+            $"数据类型：{PLCAddressConfig.GetDataTypeDisplayName(_currentAddress.DataType)}\n" +
             $"PLC名称：{_currentConfig.Name}\n\n是否继续？",
             "测试写入", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
 
@@ -545,7 +539,7 @@ namespace CosmxMESClient {
                         MessageBox.Show($"写入测试完成！\n\n"+
                             $"地址：{_currentAddress.Address}\n"+
                             $"写入值：{testValue}\n"+
-                            $"数据类型：{GetDataTypeDisplayName(_currentAddress.DataType)}\n"+
+                            $"数据类型：{PLCAddressConfig.GetDataTypeDisplayName(_currentAddress.DataType)}\n"+
                             $"写入时间：{writeResult.ElapsedMilliseconds}ms",
                             "测试结果",MessageBoxButtons.OK,MessageBoxIcon.Information);
                         }
@@ -561,67 +555,17 @@ namespace CosmxMESClient {
                 }
             }
         #region 实际的PLC测试逻辑
-        private async Task<PLCTestResult> ExecutePLCReadTest( PLCConnectionConfig config,PLCAddressConfig address ) {
-            var stopwatch = Stopwatch.StartNew();
-
-            try {
-                // 使用统一的连接管理
-                if (!await EnsurePLCConnected(config)) {
-                    return new PLCTestResult
-                        {
-                        Success=false,
-                        ErrorMessage="PLC连接失败，请检查网络和配置",
-                        ElapsedMilliseconds=stopwatch.ElapsedMilliseconds
-                        };
-                    }
-
-                // 根据数据类型执行读取操作
-                object value = await ReadAddressByType(config, address);
-
-                stopwatch.Stop( );
-
-                return new PLCTestResult
-                    {
-                    Success=true,
-                    Value=value?.ToString( )??"null",
-                    ElapsedMilliseconds=stopwatch.ElapsedMilliseconds
-                    };
-                }
-            catch (Exception ex) {
-                stopwatch.Stop( );
-                return new PLCTestResult
-                    {
-                    Success=false,
-                    ErrorMessage=ex.Message,
-                    ElapsedMilliseconds=stopwatch.ElapsedMilliseconds
-                    };
-                }
-            }
-        private async Task<bool> EnsurePLCConnected( PLCConnectionConfig config ) {
-            return await Task.Run(( ) => {
-                try {
-                    if (config.IsConnected) {
-                        return true; // 已经连接，直接返回
-                        }
-
-                    return config.Connect( ); // 尝试连接
-                    }
-                catch (Exception ex) {
-                    LoggingService.Error($"确保PLC连接失败: {config.Name}",ex);
-                    return false;
-                    }
-            });
-            }
         private async Task<PLCTestResult> ExecutePLCWriteTest( PLCConnectionConfig config,PLCAddressConfig address,string testValue ) {
             var stopwatch = Stopwatch.StartNew();
 
             try {
-                // 检查PLC连接
+                // 检查PLC连接状态，但不自动重连
                 if (config.PLCInstance==null||!config.PLCInstance.IsConnected) {
-                    // 尝试重新连接
-                    if (!await TryConnectPLC(config)) {
-                        return new PLCTestResult { Success=false,ErrorMessage="PLC连接失败" };
-                        }
+                    return new PLCTestResult
+                        {
+                        Success=false,
+                        ErrorMessage="PLC未连接，请先确保PLC已连接"
+                        };
                     }
 
                 // 根据数据类型执行写入操作
@@ -659,10 +603,9 @@ namespace CosmxMESClient {
                     };
                 }
             }
-
         private async Task<object> ReadAddressByType( PLCConnectionConfig config,PLCAddressConfig address ) {
             return await Task.Run<object>(( ) => {
-                switch (Type.GetTypeCode(address.DataType)) {
+                switch (address.DataType) {
                     case TypeCode.Boolean:
                         bool boolValue = false;
                         if (config.PLCInstance.ReadRegisterBit(address.Address,ref boolValue))
@@ -701,14 +644,18 @@ namespace CosmxMESClient {
         private async Task<bool> WriteAddressByType( PLCConnectionConfig config,PLCAddressConfig address,string value ) {
             return await Task.Run(( ) => {
                 try {
-                    switch (Type.GetTypeCode(address.DataType)) {
+                    switch (address.DataType) {
                         case TypeCode.Boolean:
                             bool boolValue = bool.Parse(value);
                             return config.PLCInstance.WriteRegisterBit(address.Address,boolValue);
 
-                        case TypeCode.Int32:
+                        case TypeCode.Int16:
                             int intValue = int.Parse(value);
                             return config.PLCInstance.WriteRegister(address.Address,intValue);
+
+                        case TypeCode.Int32:
+                            int int32Value = int.Parse(value);
+                            return config.PLCInstance.WriteInt32(address.Address,int32Value);
 
                         case TypeCode.Single:
                             float floatValue = float.Parse(value);
@@ -725,43 +672,11 @@ namespace CosmxMESClient {
                     return false;
                     }
                 catch (FormatException) {
-                    throw new Exception($"值格式错误：{value} 无法转换为 {address.DataType.Name}");
-                    }
-            });
-            }
-
-        private async Task<bool> TryConnectPLC( PLCConnectionConfig config ) {
-            return await Task.Run(( ) => {
-                try {
-                    if (config.PLCInstance==null) {
-                        config.CreatePLCInstance( );
-                        }
-
-                    return config.PLCInstance.Initialize( );
-                    }
-                catch (Exception ex) {
-                    LoggingService.Error($"PLC连接失败：{config.Name}",ex);
-                    return false;
+                    throw new Exception($"值格式错误：{value} 无法转换为 {address.DataType}");
                     }
             });
             }
         #endregion
-        private string GetTestValueForDataType( ) {
-            switch (_currentAddress.DataType.Name) {
-                case "Boolean":
-                    return "True";
-                case "Int32":
-                    return "100";
-                case "Single":
-                    return "123.45";
-                case "Double":
-                    return "678.90";
-                case "String":
-                    return "Test";
-                default:
-                    return "Default";
-                }
-            }
 
         private void btnSaveAll_Click( object sender,EventArgs e ) {
             // 数据绑定自动保存，只需要关闭窗体

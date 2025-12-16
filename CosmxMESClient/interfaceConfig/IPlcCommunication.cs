@@ -27,7 +27,7 @@ namespace CosmxMESClient.interfaceConfig {
             get; set;
             } // 配置的唯一标识
         public List<string> Addresses { get; set; } = new List<string>( ); // 支持单个或多个地址
-        public Type DataType {
+        public TypeCode DataType {
             get; set;
             }
         /// <summary>
@@ -69,7 +69,7 @@ namespace CosmxMESClient.interfaceConfig {
         public object Value {
             get; set;
             }
-        public Type ValueType {
+        public TypeCode ValueType {
             get; set;
             }
         public bool IsArray {
@@ -83,10 +83,10 @@ namespace CosmxMESClient.interfaceConfig {
             }
 
 
-        public DataReadEventArgs( string address,object value,Type valueType,IPEndPoint localEndPoint,bool isArray = false,int arrayLength = 0 ) {
+        public DataReadEventArgs( string address,object value,TypeCode? valueType,IPEndPoint localEndPoint,bool isArray = false,int arrayLength = 0 ) {
             Address=address;
             Value=value;
-            ValueType=valueType;
+            ValueType=(TypeCode) valueType ;
             IsArray=isArray;
             ArrayLength=arrayLength;
             LocalEndPoint=localEndPoint;
@@ -316,7 +316,7 @@ namespace CosmxMESClient.interfaceConfig {
         /// <param name="maxLength">最大数据长度限制，默认值为10</param>
         /// <param name="isBulkRead">是否启用批量读取模式，启用后可优化多个地址的读取性能，默认值为true</param>
         /// <returns>如果成功添加或更新配置返回true，否则返回false</returns>
-        bool AddOrUpdateAutoRead( string key,string address,Type dataType,int readIntervalMs = 1000,
+        bool AddOrUpdateAutoRead( string key,string address,TypeCode dataType,int readIntervalMs = 1000,
                                  int power = 1,int length = 1,int maxLength = 20,bool isBulkRead = true );
         /// <summary>
         /// 添加或更新自动读取配置（地址列表）
@@ -332,7 +332,7 @@ namespace CosmxMESClient.interfaceConfig {
         /// <param name="maxLength">批最大数据长度限制，默认值为10</param>
         /// <param name="isBulkRead">是否启用批量读取模式，启用后可优化多个地址的读取性能，默认值为true</param>
         /// <returns>如果成功添加或更新配置返回true，否则返回false</returns>
-        bool AddOrUpdateAutoRead( string key,List<string> addresses,Type dataType,int readIntervalMs = 1000,
+        bool AddOrUpdateAutoRead( string key,List<string> addresses,TypeCode dataType,int readIntervalMs = 1000,
                                  int power = 1,int length = 1,int maxLength = 10,bool isBulkRead = true );
         /// <summary>
         /// 移除自动读取配置

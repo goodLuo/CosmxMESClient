@@ -15,9 +15,6 @@ namespace CosmxMESClient {
         private IPlcCommunication _plcInstance;
         private bool _isConnected = false;
         private readonly object _connectionLock = new object();
-        private DateTime _lastConnectTime;
-        private int _connectRetryCount = 0;
-        private const int MAX_RETRY_COUNT = 3;
         public event PropertyChangedEventHandler PropertyChanged;
         public BindingList<PLCScanAddress> ScanAddresses { get; set; } = new BindingList<PLCScanAddress>( );
         // 地址配置集合
@@ -129,7 +126,6 @@ namespace CosmxMESClient {
                     }
                 }
             }
-
         public ByteOrderEnum ByteOrder {
             get => _byteOrder;
             set {
@@ -140,7 +136,6 @@ namespace CosmxMESClient {
                     }
                 }
             }
-
         public StringByteOrderEnum StringByteOrder {
             get => _stringByteOrder;
             set {
@@ -151,8 +146,6 @@ namespace CosmxMESClient {
                     }
                 }
             }
-
-
         public bool HeartbeatEnabled {
             get => _heartbeatEnabled;
             set {
@@ -163,7 +156,6 @@ namespace CosmxMESClient {
                     }
                 }
             }
-
         public int HeartbeatInterval {
             get => _heartbeatInterval;
             set {
@@ -174,8 +166,6 @@ namespace CosmxMESClient {
                     }
                 }
             }
-
-
         public string HeartbeatAddress {
             get => _heartbeatAddress;
             set {
@@ -186,13 +176,9 @@ namespace CosmxMESClient {
                     }
                 }
             }
-
         public bool IsEnabled {
             get; set;
             }
-
-
-
         private void UpdatePLCInstanceProperty( string propertyName,object value ) {
             if (_plcInstance==null||!IsConnected)
                 return;
@@ -465,7 +451,6 @@ namespace CosmxMESClient {
                     _plcInstance=CreatePLCInstanceInternal( );
 
                     bool result = _plcInstance.Initialize();
-
                     if (result) {
                         _isConnected=true;
                         _connectionStatus=ConnectionStatus.Connected;
