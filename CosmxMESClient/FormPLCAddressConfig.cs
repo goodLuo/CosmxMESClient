@@ -18,7 +18,6 @@ namespace CosmxMESClient {
         private AddressDirection _currentDirection;
         private PLCAddressConfig _currentAddress;
         private bool _isEditing = false;
-        private BindingSource _addressBindingSource = new BindingSource();
         public FormPLCAddressConfig( PLCConnectionConfig config,AddressDirection direction ) {
             InitializeComponent( );
             _currentConfig=config;
@@ -26,7 +25,6 @@ namespace CosmxMESClient {
             _currentAddress=CreateNewAddress( );
 
             // 初始化界面
-            //  InitializeDataTypeComboBox( );
             InitializeInterface( );
             LoadAddresses( );
             LoadFormData( );
@@ -216,14 +214,6 @@ namespace CosmxMESClient {
             numPower.Value=_currentAddress.Power>0 ? _currentAddress.Power : 1;
             numLength.Value=_currentAddress.Length>0 ? _currentAddress.Length : 1;
             chkEnabled.Checked=_currentAddress.IsEnabled;
-
-            // 设置数据类型
-            //foreach (ComboBoxItem item in cmbDataType.Items) {
-            //    if (Enum.TryParse(item.Text,out TypeCode result)) {
-            //        cmbDataType.SelectedItem=result;
-            //        break;
-            //        }
-            //    }
 
             // 如果是发送地址，设置特有属性
             if (_currentAddress is PLCSendAddress sendAddress) {

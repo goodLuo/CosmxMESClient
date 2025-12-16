@@ -74,6 +74,8 @@ namespace CosmxMESClient {
             lvScanAddresses.Columns.Add("描述",200);
             lvScanAddresses.Columns.Add("扫描间隔(ms)",100);
             lvScanAddresses.Columns.Add("启用状态",80);
+            lvScanAddresses.Columns.Add("IP地址",120);
+            lvScanAddresses.Columns.Add("端口号",80);
 
             // 配置发送地址列表的列
             lvSendAddresses.Columns.Add("地址",120);
@@ -82,6 +84,8 @@ namespace CosmxMESClient {
             lvSendAddresses.Columns.Add("发送间隔(ms)",100);
             lvSendAddresses.Columns.Add("自动发送",80);
             lvSendAddresses.Columns.Add("启用状态",80);
+            lvSendAddresses.Columns.Add("IP地址",120);
+            lvSendAddresses.Columns.Add("端口号",80);
             }
         private void SetupDataBindings( ) {
             // 清除现有绑定
@@ -500,6 +504,8 @@ namespace CosmxMESClient {
                 item.SubItems.Add(address.Description);
                 item.SubItems.Add(address.ReadInterval.ToString( ));
                 item.SubItems.Add(address.IsEnabled ? "启用" : "禁用");
+                item.SubItems.Add(_currentConfig.IPAddress);
+                item.SubItems.Add(_currentConfig.Port.ToString());
                 item.Tag=address; // 保存对象引用
 
                 // 设置行颜色
@@ -520,6 +526,8 @@ namespace CosmxMESClient {
                 item.SubItems.Add(address.ReadInterval.ToString( ));
                 item.SubItems.Add(address.AutoSend ? "是" : "否");
                 item.SubItems.Add(address.IsEnabled ? "启用" : "禁用");
+                item.SubItems.Add(_currentConfig.IPAddress);
+                item.SubItems.Add(_currentConfig.Port.ToString( ));
                 item.Tag=address; // 保存对象引用
 
                 // 设置行颜色

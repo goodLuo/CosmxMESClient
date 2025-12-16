@@ -15,7 +15,7 @@ namespace CosmxMESClient {
         #region Windows Form Designer generated code
 
         private void InitializeComponent( ) {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
             this.tabControl = new System.Windows.Forms.TabControl();
             this.tabPageAddresses = new System.Windows.Forms.TabPage();
             this.splitContainerAddresses = new System.Windows.Forms.SplitContainer();
@@ -397,8 +397,8 @@ namespace CosmxMESClient {
             this.dgvPLCConfigs.ReadOnly = true;
             this.dgvPLCConfigs.RowHeadersVisible = false;
             this.dgvPLCConfigs.RowHeadersWidth = 62;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft YaHei UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.dgvPLCConfigs.RowsDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle5.Font = new System.Drawing.Font("Microsoft YaHei UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.dgvPLCConfigs.RowsDefaultCellStyle = dataGridViewCellStyle5;
             this.dgvPLCConfigs.RowTemplate.Height = 25;
             this.dgvPLCConfigs.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dgvPLCConfigs.Size = new System.Drawing.Size(1294, 563);
