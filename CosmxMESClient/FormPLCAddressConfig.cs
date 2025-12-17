@@ -84,7 +84,9 @@ namespace CosmxMESClient {
 
             lblTriggerDelay.Visible=selectedIndex!=0;
             numTriggerDelay.Visible=selectedIndex!=0;
-
+            labTriggerAddress.Visible=selectedIndex==0;
+            cmbTriggerAddress.Visible=selectedIndex==0;
+            btnRefreshAddress.Visible=selectedIndex==0;
             // 更新标签文本
             if (showPercentage) {
                 lblTriggerThreshold.Text="变化百分比(%):";
@@ -120,9 +122,8 @@ namespace CosmxMESClient {
                 addresses=_currentConfig.SendAddresses.Cast<PLCAddressConfig>( );
                 }
 
-            foreach (var address in addresses.OrderBy(a => a.Name)) {
+            foreach (var address in addresses.OrderBy(a => a.Key)) {
                 var item = new ListViewItem(address.Key);
-                item.SubItems.Add(address.Name);
                 item.SubItems.Add(address.Address);
                 item.SubItems.Add(PLCAddressConfig.GetDataTypeDisplayName(address.DataType));
                 item.SubItems.Add(address.Description);
@@ -145,6 +146,13 @@ namespace CosmxMESClient {
                 : "无条件";
                     item.SubItems.Add(triggerStatus);
 
+                    item.SubItems.Add("N/A"); // 触发条件
+                    item.SubItems.Add("N/A"); // 触发阈值
+
+                    string TriggerAddress=scanAddress.TriggerCondition != TriggerCondition.None?
+                    "无条件":
+                    scanAddress.TriggerPLCScanAddress.Key;
+                    item.SubItems.Add(TriggerAddress);
                     // 设置行颜色
                     if (scanAddress.IsTriggered)
                         item.BackColor=Color.LightGreen;
@@ -158,8 +166,8 @@ namespace CosmxMESClient {
                         item.SubItems.Add("N/A"); // 触发阈值
                         item.SubItems.Add(sendAddress.AutoSend ? "自动发送" : "手动发送"); // 发送状态
                         }
-                    else {
-                        item.SubItems.Add("N/A");
+                    else  {
+                        item.SubItems.Add("N/A"); 
                         item.SubItems.Add("N/A");
                         item.SubItems.Add("N/A");
                         }
@@ -167,6 +175,9 @@ namespace CosmxMESClient {
                 item.Tag=address;
                 lvAddresses.Items.Add(item);
                 }
+
+            RefreshAddress( );
+
             }
         private string GetTriggerConditionDisplay( TriggerCondition condition ) {
             switch (condition) {
@@ -207,7 +218,7 @@ namespace CosmxMESClient {
                 }
 
             // 手动加载数据到控件（不使用数据绑定）
-            txtName.Text=_currentAddress.Name??"";
+            txtName.Text=_currentAddress.Key??"";
             txtAddress.Text=_currentAddress.Address??"";
             txtDescription.Text=_currentAddress.Description??"";
             numReadInterval.Value=_currentAddress.ReadInterval>0 ? _currentAddress.ReadInterval : 1000;
@@ -237,14 +248,13 @@ namespace CosmxMESClient {
                 return;
 
             // 手动从控件保存数据到对象
-            _currentAddress.Name=txtName.Text.Trim( );
+            _currentAddress.Key=txtName.Text.Trim( );
             _currentAddress.Address=txtAddress.Text.Trim( );
             _currentAddress.Description=txtDescription.Text.Trim( );
             _currentAddress.ReadInterval=(int) numReadInterval.Value;
             _currentAddress.Power=(int) numPower.Value;
             _currentAddress.Length=(int) numLength.Value;
             _currentAddress.IsEnabled=chkEnabled.Checked;
-
             // 保存数据类型
             if (cmbDataType.SelectedItem is ComboBoxItem selectedItem) {
                 if (Enum.TryParse(selectedItem.Text,out TypeCode result)) {
@@ -266,6 +276,26 @@ namespace CosmxMESClient {
                 scanAddress.TriggerDelay=(int) numTriggerDelay.Value;
                 scanAddress.TriggerOnRisingEdge=chkTriggerRisingEdge.Checked;
                 scanAddress.TriggerOnFallingEdge=chkTriggerFallingEdge.Checked;
+                GlobalVariables.AvailableTriggerAddresses.TryGetValue(cmbTriggerAddress.Text,out  PLCScanAddress pLCScanAddress);
+                scanAddress.TriggerPLCScanAddress=pLCScanAddress;
+                // 设置触发依赖关系
+                if (scanAddress.TriggerCondition!=TriggerCondition.None&&
+                    !string.IsNullOrEmpty(cmbTriggerAddress.Text)) {
+                    GlobalVariables.AvailableTriggerAddresses.TryGetValue(
+                        cmbTriggerAddress.Text,out PLCScanAddress triggerAddress);
+
+                    if (triggerAddress!=null) {
+                        scanAddress.TriggerPLCScanAddress=triggerAddress;
+                        scanAddress.IsTriggerDependent=true;
+
+                        // 注册依赖关系
+                        PLCAddressManager.Instance.RegisterTriggerDependency(
+                            triggerAddress.Key,scanAddress);
+                        }
+                    }
+                else {
+                    scanAddress.IsTriggerDependent=false;
+                    }
                 }
             }
         private PLCAddressConfig CreateNewAddress( ) {
@@ -277,7 +307,7 @@ namespace CosmxMESClient {
                 // 创建扫描地址
                 newAddress=new PLCScanAddress
                     {
-                    Name=$"扫描地址_{DateTime.Now:HHmmss}",
+                    Key=$"扫描地址_{DateTime.Now:HHmmss}",
                     Address="D100", // 默认扫描地址
                     DataType=TypeCode.Int16,
                     Description="",
@@ -296,7 +326,7 @@ namespace CosmxMESClient {
                 // 创建发送地址
                 newAddress=new PLCSendAddress
                     {
-                    Name=$"发送地址_{DateTime.Now:HHmmss}",
+                    Key=$"发送地址_{DateTime.Now:HHmmss}",
                     Address="D200", // 默认发送地址
                     DataType=TypeCode.Int16,
                     Description="",
@@ -332,7 +362,7 @@ namespace CosmxMESClient {
                         }
                     }
 
-                LoggingService.Info($"添加{GetDirectionDisplayName( )}地址: {_currentAddress.Name}");
+                LoggingService.Info($"添加{GetDirectionDisplayName( )}地址: {_currentAddress.Key}");
 
                 // 刷新表格显示
                 LoadAddresses( );
@@ -371,7 +401,7 @@ namespace CosmxMESClient {
                 // 由于_currentAddress已经是实际对象的引用，数据已经自动更新
                 // 只需要刷新显示即可
 
-                LoggingService.Info($"修改{GetDirectionDisplayName( )}地址: {_currentAddress.Name}");
+                LoggingService.Info($"修改{GetDirectionDisplayName( )}地址: {_currentAddress.Key}");
 
                 // 刷新表格显示
                 LoadAddresses( );
@@ -395,7 +425,7 @@ namespace CosmxMESClient {
             if (address==null)
                 return;
 
-            var result = MessageBox.Show($"确定要删除地址 '{address.Name}' 吗？", "确认删除",
+            var result = MessageBox.Show($"确定要删除地址 '{address.Key}' 吗？", "确认删除",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
             if (result==DialogResult.Yes) {
@@ -409,7 +439,7 @@ namespace CosmxMESClient {
                         }
 
                     if (success) {
-                        LoggingService.Info($"删除{GetDirectionDisplayName( )}地址: {address.Name}");
+                        LoggingService.Info($"删除{GetDirectionDisplayName( )}地址: {address.Key}");
                         LoadAddresses( );
                         ResetForm( );
                         }
@@ -762,6 +792,20 @@ namespace CosmxMESClient {
             public Type Value {
                 get; set;
                 }
+            }
+        private void RefreshAddress( ) {
+            cmbTriggerAddress.Items.Clear( );
+            GlobalVariables.AvailableTriggerAddresses.Clear( );
+            // 获取所有可用的触发条件地址（除当前地址外的其他扫描地址）
+            GlobalVariables.AvailableTriggerAddresses=GlobalVariables.PLCConnections.SelectMany(p => p.ScanAddresses)
+          .Where(addr => addr.IsEnabled&&addr.TriggerCondition!=TriggerCondition.None).ToDictionary(key => key.Key);
+
+            // 添加其他扫描地址的Key作为触发条件选项
+            cmbTriggerAddress.Items.AddRange(GlobalVariables.AvailableTriggerAddresses.Select(addr =>
+             addr.Key).ToArray( ));
+            }
+        private void btnRefreshAddress_Click( object sender,EventArgs e ) {
+            RefreshAddress( );
             }
         }
     }

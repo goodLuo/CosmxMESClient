@@ -15,16 +15,18 @@ namespace CosmxMESClient {
         #region Windows Form Designer generated code
 
         private void InitializeComponent( ) {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
             this.tabControl = new System.Windows.Forms.TabControl();
             this.tabPageAddresses = new System.Windows.Forms.TabPage();
             this.splitContainerAddresses = new System.Windows.Forms.SplitContainer();
             this.grpScanAddresses = new System.Windows.Forms.GroupBox();
+            this.dgvScanAddresses = new System.Windows.Forms.DataGridView();
             this.grpSendAddresses = new System.Windows.Forms.GroupBox();
+            this.dgvSendAddresses = new System.Windows.Forms.DataGridView();
             this.grpAddressManagement = new System.Windows.Forms.GroupBox();
             this.btnConfigScanAddresses = new System.Windows.Forms.Button();
             this.btnConfigSendAddresses = new System.Windows.Forms.Button();
@@ -72,8 +74,6 @@ namespace CosmxMESClient {
             this.btnLoadConfigs = new System.Windows.Forms.Button();
             this.btnSaveAll = new System.Windows.Forms.Button();
             this.btnClose = new System.Windows.Forms.Button();
-            this.dgvScanAddresses = new System.Windows.Forms.DataGridView();
-            this.dgvSendAddresses = new System.Windows.Forms.DataGridView();
             this.tabControl.SuspendLayout();
             this.tabPageAddresses.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerAddresses)).BeginInit();
@@ -81,7 +81,9 @@ namespace CosmxMESClient {
             this.splitContainerAddresses.Panel2.SuspendLayout();
             this.splitContainerAddresses.SuspendLayout();
             this.grpScanAddresses.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvScanAddresses)).BeginInit();
             this.grpSendAddresses.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvSendAddresses)).BeginInit();
             this.grpAddressManagement.SuspendLayout();
             this.tabPageConfig.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -98,8 +100,6 @@ namespace CosmxMESClient {
             ((System.ComponentModel.ISupportInitialize)(this.numTimeout)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numHeartbeatInterval)).BeginInit();
             this.grpFileActions.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvScanAddresses)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvSendAddresses)).BeginInit();
             this.SuspendLayout();
             // 
             // tabControl
@@ -152,6 +152,35 @@ namespace CosmxMESClient {
             this.grpScanAddresses.TabStop = false;
             this.grpScanAddresses.Text = "扫描地址配置";
             // 
+            // dgvScanAddresses
+            // 
+            this.dgvScanAddresses.AllowUserToAddRows = false;
+            this.dgvScanAddresses.AllowUserToDeleteRows = false;
+            this.dgvScanAddresses.AllowUserToResizeRows = false;
+            dataGridViewCellStyle1.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.dgvScanAddresses.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
+            this.dgvScanAddresses.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.dgvScanAddresses.BackgroundColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = System.Drawing.Color.LightGreen;
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft YaHei UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgvScanAddresses.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
+            this.dgvScanAddresses.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvScanAddresses.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dgvScanAddresses.EnableHeadersVisualStyles = false;
+            this.dgvScanAddresses.Location = new System.Drawing.Point(3, 26);
+            this.dgvScanAddresses.MultiSelect = false;
+            this.dgvScanAddresses.Name = "dgvScanAddresses";
+            this.dgvScanAddresses.RowHeadersVisible = false;
+            this.dgvScanAddresses.RowHeadersWidth = 62;
+            this.dgvScanAddresses.RowTemplate.Height = 30;
+            this.dgvScanAddresses.Size = new System.Drawing.Size(1230, 288);
+            this.dgvScanAddresses.TabIndex = 0;
+            // 
             // grpSendAddresses
             // 
             this.grpSendAddresses.Controls.Add(this.dgvSendAddresses);
@@ -162,6 +191,35 @@ namespace CosmxMESClient {
             this.grpSendAddresses.TabIndex = 0;
             this.grpSendAddresses.TabStop = false;
             this.grpSendAddresses.Text = "发送地址配置";
+            // 
+            // dgvSendAddresses
+            // 
+            this.dgvSendAddresses.AllowUserToAddRows = false;
+            this.dgvSendAddresses.AllowUserToDeleteRows = false;
+            this.dgvSendAddresses.AllowUserToResizeRows = false;
+            dataGridViewCellStyle3.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.dgvSendAddresses.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle3;
+            this.dgvSendAddresses.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.dgvSendAddresses.BackgroundColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle4.BackColor = System.Drawing.Color.LightGreen;
+            dataGridViewCellStyle4.Font = new System.Drawing.Font("Microsoft YaHei UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            dataGridViewCellStyle4.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle4.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle4.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgvSendAddresses.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle4;
+            this.dgvSendAddresses.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvSendAddresses.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dgvSendAddresses.EnableHeadersVisualStyles = false;
+            this.dgvSendAddresses.Location = new System.Drawing.Point(3, 26);
+            this.dgvSendAddresses.MultiSelect = false;
+            this.dgvSendAddresses.Name = "dgvSendAddresses";
+            this.dgvSendAddresses.RowHeadersVisible = false;
+            this.dgvSendAddresses.RowHeadersWidth = 62;
+            this.dgvSendAddresses.RowTemplate.Height = 30;
+            this.dgvSendAddresses.Size = new System.Drawing.Size(1230, 284);
+            this.dgvSendAddresses.TabIndex = 1;
             // 
             // grpAddressManagement
             // 
@@ -777,64 +835,6 @@ namespace CosmxMESClient {
             this.btnClose.UseVisualStyleBackColor = false;
             this.btnClose.Click += new System.EventHandler(this.btnClose_Click);
             // 
-            // dgvScanAddresses
-            // 
-            this.dgvScanAddresses.AllowUserToAddRows = false;
-            this.dgvScanAddresses.AllowUserToDeleteRows = false;
-            this.dgvScanAddresses.AllowUserToResizeRows = false;
-            dataGridViewCellStyle1.BackColor = System.Drawing.Color.WhiteSmoke;
-            this.dgvScanAddresses.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
-            this.dgvScanAddresses.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            this.dgvScanAddresses.BackgroundColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = System.Drawing.Color.LightGreen;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft YaHei UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgvScanAddresses.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
-            this.dgvScanAddresses.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgvScanAddresses.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dgvScanAddresses.EnableHeadersVisualStyles = false;
-            this.dgvScanAddresses.Location = new System.Drawing.Point(3, 26);
-            this.dgvScanAddresses.MultiSelect = false;
-            this.dgvScanAddresses.Name = "dgvScanAddresses";
-            this.dgvScanAddresses.RowHeadersVisible = false;
-            this.dgvScanAddresses.RowHeadersWidth = 62;
-            this.dgvScanAddresses.RowTemplate.Height = 30;
-            this.dgvScanAddresses.Size = new System.Drawing.Size(1230, 288);
-            this.dgvScanAddresses.TabIndex = 0;
-            // 
-            // dgvSendAddresses
-            // 
-            this.dgvSendAddresses.AllowUserToAddRows = false;
-            this.dgvSendAddresses.AllowUserToDeleteRows = false;
-            this.dgvSendAddresses.AllowUserToResizeRows = false;
-            dataGridViewCellStyle3.BackColor = System.Drawing.Color.WhiteSmoke;
-            this.dgvSendAddresses.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle3;
-            this.dgvSendAddresses.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            this.dgvSendAddresses.BackgroundColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle4.BackColor = System.Drawing.Color.LightGreen;
-            dataGridViewCellStyle4.Font = new System.Drawing.Font("Microsoft YaHei UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            dataGridViewCellStyle4.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle4.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle4.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgvSendAddresses.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle4;
-            this.dgvSendAddresses.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgvSendAddresses.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dgvSendAddresses.EnableHeadersVisualStyles = false;
-            this.dgvSendAddresses.Location = new System.Drawing.Point(3, 26);
-            this.dgvSendAddresses.MultiSelect = false;
-            this.dgvSendAddresses.Name = "dgvSendAddresses";
-            this.dgvSendAddresses.RowHeadersVisible = false;
-            this.dgvSendAddresses.RowHeadersWidth = 62;
-            this.dgvSendAddresses.RowTemplate.Height = 30;
-            this.dgvSendAddresses.Size = new System.Drawing.Size(1230, 284);
-            this.dgvSendAddresses.TabIndex = 1;
-            // 
             // FormPLCConfig
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 24F);
@@ -855,7 +855,9 @@ namespace CosmxMESClient {
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerAddresses)).EndInit();
             this.splitContainerAddresses.ResumeLayout(false);
             this.grpScanAddresses.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.dgvScanAddresses)).EndInit();
             this.grpSendAddresses.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.dgvSendAddresses)).EndInit();
             this.grpAddressManagement.ResumeLayout(false);
             this.tabPageConfig.ResumeLayout(false);
             this.splitContainer1.Panel1.ResumeLayout(false);
@@ -873,8 +875,6 @@ namespace CosmxMESClient {
             ((System.ComponentModel.ISupportInitialize)(this.numTimeout)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numHeartbeatInterval)).EndInit();
             this.grpFileActions.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.dgvScanAddresses)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvSendAddresses)).EndInit();
             this.ResumeLayout(false);
 
             }

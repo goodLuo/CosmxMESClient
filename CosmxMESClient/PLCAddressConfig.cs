@@ -26,14 +26,6 @@ namespace CosmxMESClient {
                 }
             }
 
-        public string Name {
-            get => _name;
-            set {
-                _name=value;
-                OnPropertyChanged( );
-                }
-            }
-
         public string Address {
             get => _address;
             set {

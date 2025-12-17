@@ -226,10 +226,10 @@ namespace CosmxMESClient {
             LoggingService.Error($"DataGridView数据错误: {e.Exception.Message}");
             }
         private void LoadSavedConfigs( ) {
-            var configs = PLCConfigManager.LoadConfigs();
+            //var configs = PLCConfigManager.LoadConfigs();
             _plcConfigs.Clear( );
 
-            foreach (var config in configs) {
+            foreach (var config in GlobalVariables.PLCConnections) {
                 // 为每个配置创建PLC实例
                 config.CreatePLCInstance( );
                 _plcConfigs.Add(config);
@@ -238,6 +238,32 @@ namespace CosmxMESClient {
             if (_plcConfigs.Count>0) {
                 dgvPLCConfigs.ClearSelection( );
                 dgvPLCConfigs.Rows[0].Selected=true;
+                }
+
+            // 重要：加载配置后重建触发依赖关系
+            RebuildTriggerDependencies( );
+
+            LoggingService.Info($"已加载 {GlobalVariables.PLCConnections.Count} 个PLC配置，并重建触发依赖关系");
+            }
+        private void RebuildTriggerDependencies( ) {
+            try {
+                // 获取PLCAddressManager实例并重建依赖
+                var addressManager = PLCAddressManager.Instance;
+                addressManager.RebuildAllTriggerDependencies( );
+
+                // 可选：显示依赖关系信息
+                var dependencies = addressManager.GetAllDependencies();
+                if (dependencies.Count>0) {
+                    StringBuilder sb = new StringBuilder();
+                    sb.AppendLine("触发依赖关系:");
+                    foreach (var kvp in dependencies) {
+                        sb.AppendLine($"  {kvp.Key} -> {string.Join(", ",kvp.Value)}");
+                        }
+                    LoggingService.Info(sb.ToString( ));
+                    }
+                }
+            catch (Exception ex) {
+                LoggingService.Error("重建触发依赖关系失败",ex);
                 }
             }
         private void LoadDefaultValues( ) {
@@ -568,6 +594,8 @@ namespace CosmxMESClient {
                 _config=config;
                 }
             // 扫描地址属性
+            [DisplayName("键值")]
+            public string Name => _address.Key;
             [DisplayName("地址")]
             public string Address => _address.Address;
             [DisplayName("数据类型")]
@@ -595,6 +623,8 @@ namespace CosmxMESClient {
                 }
 
             // 公共属性
+            [DisplayName("键值")]
+            public string Name => _address.Key;
             [DisplayName("地址")]
             public string Address => _address.Address;
             [DisplayName("数据类型")]
@@ -636,13 +666,25 @@ namespace CosmxMESClient {
                 MessageBox.Show("连接失败");
             }
         private void btnLoadConfigs_Click( object sender,EventArgs e ) {
-            var configs = PLCConfigManager.LoadConfigs();
-            _plcConfigs.Clear( );
-            foreach (var config in configs) {
-                _plcConfigs.Add(config);
+            try {
+                // 原有的加载逻辑
+                //var configs = PLCConfigManager.LoadConfigs();
+                _plcConfigs.Clear( );
+                foreach (var config in GlobalVariables.PLCConnections) {
+                    _plcConfigs.Add(config);
+                    }
+
+                // 重建触发依赖关系
+                RebuildTriggerDependencies( );
+
+                MessageBox.Show($"已加载 {GlobalVariables.PLCConnections.Count} 个PLC配置，并重建触发依赖关系","成功",
+                    MessageBoxButtons.OK,MessageBoxIcon.Information);
                 }
-            MessageBox.Show($"已加载 {configs.Count} 个PLC配置","成功",
-                MessageBoxButtons.OK,MessageBoxIcon.Information);
+            catch (Exception ex) {
+                LoggingService.Error("加载配置失败",ex);
+                MessageBox.Show($"加载配置失败: {ex.Message}","错误",
+                    MessageBoxButtons.OK,MessageBoxIcon.Error);
+                }
             }
         private void btnClose_Click( object sender,EventArgs e ) {
             this.DialogResult=DialogResult.OK;

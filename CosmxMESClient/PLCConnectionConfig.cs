@@ -224,7 +224,7 @@ namespace CosmxMESClient {
         public bool AddScanAddress( PLCScanAddress address ) {
             lock (_addressLock) {
                 if (string.IsNullOrEmpty(address.Key)) {
-                    address.Key=GenerateAddressKey(address.Name,AddressDirection.ReadOnly);
+                    address.Key=GenerateAddressKey(address.Key,AddressDirection.ReadOnly);
                     }
 
                 if (_scanAddressesDict.ContainsKey(address.Key)) {
@@ -238,7 +238,7 @@ namespace CosmxMESClient {
             }
         public bool AddSendAddress( PLCSendAddress address ) {
             if (string.IsNullOrEmpty(address.Key)) {
-                address.Key=GenerateAddressKey(address.Name,AddressDirection.WriteOnly);
+                address.Key=GenerateAddressKey(address.Key,AddressDirection.WriteOnly);
                 }
 
             if (_sendAddressesDict.ContainsKey(address.Key)) {
@@ -589,8 +589,8 @@ namespace CosmxMESClient {
         public void StartAutoRead( ) {
             try {
                 if (PLCInstance!=null&&PLCInstance.IsConnected) {
-                    // 添加扫描地址到自动读取
-                    foreach (var address in ScanAddresses.Where(a => a.IsEnabled)) {
+                    // 只添加应该自动读取的地址
+                    foreach (var address in ScanAddresses.Where(a => a.ShouldAutoRead)) {
                         PLCInstance.AddOrUpdateAutoRead(
                             $"{Name}_{address.Key}",
                             address.Address,
@@ -601,8 +601,7 @@ namespace CosmxMESClient {
                             20,
                             true
                         );
-
-                        LoggingService.Info($"已添加自动读取地址: {address.Name} ({address.Address})");
+                        LoggingService.Info($"已添加自动读取地址: {address.Key} ({address.Address})");
                         }
 
                     PLCInstance.StartAutoRead( );
@@ -618,7 +617,10 @@ namespace CosmxMESClient {
                 throw;
                 }
             }
-
+        //// 手动触发依赖地址的读取
+        //public async Task<bool> TriggerDependentReadsAsync( string triggerKey ) {
+        //    return await PLCAddressManager.Instance.TriggerDependentReadsAsync(triggerKey,this);
+        //    }
         /// <summary>
         /// 停止自动读取
         /// </summary>

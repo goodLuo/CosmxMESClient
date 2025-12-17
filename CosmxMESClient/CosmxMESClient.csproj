@@ -107,6 +107,7 @@
     <Compile Include="FormPLCConfig.Designer.cs">
       <DependentUpon>FormPLCConfig.cs</DependentUpon>
     </Compile>
+    <Compile Include="GlobalVariables.cs" />
     <Compile Include="interfaceConfig\IPlcCommunication.cs" />
     <Compile Include="Models\ApiResponse.cs" />
     <Compile Include="Models\RequestModels.cs" />

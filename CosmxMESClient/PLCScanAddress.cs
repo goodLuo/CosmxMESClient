@@ -25,7 +25,7 @@ namespace CosmxMESClient {
         private int _triggerDelay;
         private int _triggerCount;
         private int _maxTriggerCount = 0; // 0表示无限制
-
+        private PLCScanAddress _pLCScanAddress;
         public DateTime LastReadTime {
             get => _lastReadTime;
             set {
@@ -33,7 +33,25 @@ namespace CosmxMESClient {
                 OnPropertyChanged( );
                 }
             }
+        private bool _isTriggerDependent;
 
+        // 是否依赖触发地址（如果为true，则不自动读取）
+        public bool IsTriggerDependent {
+            get => _isTriggerDependent;
+            set {
+                _isTriggerDependent=value;
+                OnPropertyChanged( );
+                }
+            }
+        // 检查是否应该自动读取
+        public bool ShouldAutoRead => !IsTriggerDependent&&IsEnabled;
+        public PLCScanAddress TriggerPLCScanAddress {
+            get => _pLCScanAddress;
+            set {
+                _pLCScanAddress=value;
+                OnPropertyChanged( );
+                }
+            }
         public object LastValue {
             get => _lastValue;
             set {
@@ -196,7 +214,7 @@ namespace CosmxMESClient {
                 IsTriggered=true;
 
                 // 记录触发日志
-                LoggingService.Info($"触发条件满足 - 地址: {Name}, 新值: {newValue}, 旧值: {previousValue}, 条件: {TriggerCondition}");
+                LoggingService.Info($"触发条件满足 - 地址: {Key}, 新值: {newValue}, 旧值: {previousValue}, 条件: {TriggerCondition}");
                 }
 
             return triggered;

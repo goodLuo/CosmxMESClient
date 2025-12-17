@@ -19,7 +19,7 @@ namespace CosmxMESClient {
         // PLC配置管理器
         private PLCAddressManager _plcAddressManager;
         private FormPLCConfig _plcConfigForm;
-        private List<PLCConnectionConfig> pLCConnections=new List<PLCConnectionConfig>();
+
 
         private SimplifiedPLCReconnectManager _reconnectManager;
 
@@ -52,6 +52,12 @@ namespace CosmxMESClient {
 
             // 重要修改：延迟初始化PLC管理器
             _=InitializePLCManagerAsync( );
+            }
+        private void InitializePLCManager( ) {
+            _plcAddressManager.DataRead+=( sender,e ) => {
+                // 统一处理所有数据读取，不再需要复杂的分发逻辑
+                HandlePLCDataRead(e);
+            };
             }
         #region 初始化方法
         private void InitializeStatusRefreshTimer( ) {
@@ -106,6 +112,11 @@ namespace CosmxMESClient {
                 // 只加载配置，不立即连接
                 await LoadPLCConfigsAsync( );
 
+                InitializePLCManager( );
+
+                // 加载配置后重建触发依赖关系
+                RebuildTriggerDependencies( );
+
                 // 延迟3秒后统一连接（避免重复）
                 await Task.Delay(3000);
 
@@ -120,8 +131,29 @@ namespace CosmxMESClient {
                 UpdateStatus($"初始化失败: {ex.Message}",false);
                 }
             }
+
+        private void RebuildTriggerDependencies( ) {
+            try {
+                _plcAddressManager.RebuildAllTriggerDependencies( );
+
+                // 显示依赖关系信息
+                var dependencies = _plcAddressManager.GetAllDependencies();
+                if (dependencies.Count>0) {
+                    AppendLog($"发现 {dependencies.Count} 个触发依赖关系");
+                    foreach (var kvp in dependencies) {
+                        AppendLog($"  触发地址: {kvp.Key} -> 依赖地址: {string.Join(", ",kvp.Value)}");
+                        }
+                    }
+                else {
+                    AppendLog("未发现触发依赖关系");
+                    }
+                }
+            catch (Exception ex) {
+                LoggingService.Error("重建触发依赖关系失败",ex);
+                }
+            }
         private async Task ConnectAllPLCsOnceAsync( ) {
-            var configs = PLCConfigManager.LoadConfigs().Where(c => c.IsEnabled).ToList();
+            var configs =GlobalVariables.PLCConnections.Where(c => c.IsEnabled).ToList();
 
             AppendLog($"开始连接 {configs.Count} 个启用的PLC...");
 
@@ -137,7 +169,6 @@ namespace CosmxMESClient {
                     bool connected = await SafeConnectPLCAsync(config);
                     if (connected) {
                         AppendLog($"PLC {config.Name} 连接成功");
-                        pLCConnections.Add(config);
                         // 安全启动自动读取
                         await SafeStartAutoRead(config);
                         }
@@ -194,15 +225,14 @@ namespace CosmxMESClient {
         private async Task LoadPLCConfigsAsync( ) {
             try {
                 AppendLog("开始加载PLC配置...");
-                var configs  = await Task.Run(() => PLCConfigManager.LoadConfigs());
-
-                if (configs.Count==0) {
+                GlobalVariables.PLCConnections=await Task.Run(( ) => PLCConfigManager.LoadConfigs( ));
+                if (GlobalVariables.PLCConnections.Count==0) {
                     AppendLog("未找到PLC配置，请通过菜单进行配置");
                     return;
                     }
 
                 int enabledCount = 0;
-                foreach (var config in configs) {
+                foreach (var config in GlobalVariables.PLCConnections) {
                     if (config.IsEnabled) {
                         enabledCount++;
                         // 只注册配置，不连接
@@ -294,8 +324,8 @@ namespace CosmxMESClient {
 
             try {
                 // 更新在线时间显示
-                var configs = PLCConfigManager.LoadConfigs();
-                foreach (var config in configs.Where(c => c.IsConnected)) {
+                //var configs = PLCConfigManager.LoadConfigs();
+                foreach (var config in GlobalVariables.PLCConnections.Where(c => c.IsConnected)) {
                     if (_plcStatusItems.TryGetValue(config.Key,out var item)) {
                         var onlineTime = DateTime.Now - config.LastConnectedTime;
                         item.SubItems[1].Text=$"运行中({onlineTime:mm\\:ss})";
@@ -310,12 +340,12 @@ namespace CosmxMESClient {
         #region 加载PLC配置并启动自动读取
         private void LoadPLCConfigs( ) {
             try {
-                var configs = PLCConfigManager.LoadConfigs();
+                //var configs = PLCConfigManager.LoadConfigs();
 
-                AppendLog($"找到 {configs.Count} 个PLC配置");
+                AppendLog($"找到 {GlobalVariables.PLCConnections.Count} 个PLC配置");
 
                 int enabledCount = 0;
-                foreach (var config in configs) {
+                foreach (var config in GlobalVariables.PLCConnections) {
                     if (config.IsEnabled) {
                         RegisterPLCConfig(config);
                         enabledCount++;
@@ -325,7 +355,7 @@ namespace CosmxMESClient {
                         }
                     }
 
-                AppendLog($"已启用 {enabledCount} 个PLC配置，共 {configs.Count} 个配置");
+                AppendLog($"已启用 {enabledCount} 个PLC配置，共 {GlobalVariables.PLCConnections.Count} 个配置");
 
                 if (enabledCount==0) {
                     AppendLog("警告：没有启用的PLC配置，请检查配置");
@@ -336,7 +366,6 @@ namespace CosmxMESClient {
                 AppendLog($"加载PLC配置失败: {ex.Message}");
                 }
             }
-
         private void RegisterPLCConfig( PLCConnectionConfig config ) {
             try {
                 // 注册到地址管理器
@@ -481,11 +510,31 @@ namespace CosmxMESClient {
                 this.Invoke(new EventHandler<DataReadEventArgs>(OnPLCDataRead),sender,e);
                 return;
                 }
+
             try {
-                // 可以根据地址进行特定的业务处理
-                // 示例：根据不同的地址进行不同的业务处理
-                var addressKey=   pLCConnections.Find(p=>p.PLCInstance.IPEnd.Equals(e.LocalEndPoint));
-                var cc=  _plcAddressManager.ReadAddressInternal(addressKey,(addressKey.ScanAddresses.ToList()).Find(p=>p.Address==e.Address),e.Value,e.ValueType);
+                // 查找对应的PLC配置
+                var config = GlobalVariables.PLCConnections
+            .FirstOrDefault(p => p.PLCInstance.IPEnd.Equals(e.LocalEndPoint));
+
+                if (config!=null) {
+                    // 查找对应的地址配置
+                    var address = config.ScanAddresses
+                .FirstOrDefault(a => a.Address == e.Address);
+
+                    if (address!=null) {
+                        // 如果这个地址是触发地址，检查是否满足条件
+                        if (address.TriggerCondition!=TriggerCondition.None) {
+                            bool triggered = address.CheckTriggerCondition(e.Value, address.LastValue);
+                            if (triggered) {
+                                // 触发依赖此地址的所有扫描地址
+                                _=PLCAddressManager.Instance.TriggerDependentReadsAsync(address.Key,config);
+                                // 处理业务逻辑
+                                _=_plcAddressManager.ReadAddressInternal(config,address,e.Value,e.ValueType);
+                                }
+                            }
+                        
+                        }
+                    }
                 }
             catch (Exception ex) {
                 LoggingService.Error("处理PLC数据读取事件失败",ex);
@@ -1041,6 +1090,8 @@ namespace CosmxMESClient {
 
                 // 重新加载PLC配置
                 ReloadPLCConfigs( );
+                // 重建触发依赖关系
+                //RebuildTriggerDependencies( );
                 }
             catch (Exception ex) {
                 LoggingService.Error("重新加载PLC配置失败",ex);
@@ -1064,8 +1115,8 @@ namespace CosmxMESClient {
         // 停止所有PLC自动读取
         private void StopAllPLCAutoRead( ) {
             try {
-                var configs = PLCConfigManager.LoadConfigs();
-                foreach (var config in configs) {
+                //var configs = PLCConfigManager.LoadConfigs();
+                foreach (var config in GlobalVariables.PLCConnections) {
                     if (config.IsEnabled) {
                         config.StopAutoRead( );
                         AppendLog($"已停止自动读取: {config.Name}");
@@ -1111,8 +1162,8 @@ namespace CosmxMESClient {
         private void Form1_FormClosing( object sender,FormClosingEventArgs e ) {
             try {
                 // 停止所有PLC自动读取
-                var configs = PLCConfigManager.LoadConfigs();
-                foreach (var config in configs.Where(c => c.IsConnected)) {
+                //var configs = PLCConfigManager.LoadConfigs();
+                foreach (var config in GlobalVariables.PLCConnections.Where(c => c.IsConnected)) {
                     config.StopAutoRead( );
                     config.Disconnect( );
                     }
@@ -1127,7 +1178,7 @@ namespace CosmxMESClient {
             try {
                 AppendLog("手动启动所有PLC连接...");
 
-                var configs = PLCConfigManager.LoadConfigs()
+                var configs =GlobalVariables.PLCConnections
                 .Where(c => c.IsEnabled && !c.IsConnected)
                 .ToList();
 
@@ -1152,7 +1203,7 @@ namespace CosmxMESClient {
             try {
                 AppendLog("手动停止所有PLC连接...");
 
-                var configs = PLCConfigManager.LoadConfigs()
+                var configs =GlobalVariables.PLCConnections
                 .Where(c => c.IsEnabled && c.IsConnected)
                 .ToList();
 
@@ -1169,6 +1220,38 @@ namespace CosmxMESClient {
                 ShowErrorDialog($"停止连接失败: {ex.Message}");
                 }
             }
+        #region  配置
+        /// <summary>
+        /// 简化的数据处理方法
+        /// </summary>
+        private void HandlePLCDataRead( DataReadEventArgs e ) {
+            // 根据地址直接处理，不需要复杂的事件注册
+            switch (e.Address) {
+                case "D100":
+                    ProcessTemperature(e.Value);
+                    break;
+                case "D101":
+                    ProcessPressure(e.Value);
+                    break;
+                default:
+                    // 默认处理或忽略
+                    break;
+                }
+            }
+        // 具体的处理逻辑保持不变
+        private void ProcessTemperature( object value ) {
+            if (value is int temp) {
+                // 温度处理逻辑
+                AppendLog($"温度: {temp}°C");
+                }
+            }
 
+        private void ProcessPressure( object value ) {
+            if (value is float pressure) {
+                // 压力处理逻辑
+                AppendLog($"压力: {pressure}MPa");
+                }
+            }
+        #endregion
         }
     }
