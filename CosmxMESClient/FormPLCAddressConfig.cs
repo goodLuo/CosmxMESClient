@@ -68,35 +68,55 @@ namespace CosmxMESClient {
                 }
             }
         private void UpdateTriggerControlsVisibility( ) {
-            int selectedIndex = cmbTriggerCondition.SelectedIndex;
+            if (cmbTriggerCondition.SelectedItem==null)
+                return;
 
-            // 根据选择的触发条件显示/隐藏相关控件
-            bool showThreshold = selectedIndex >= 1 && selectedIndex <= 6; // 阈值相关条件
-            bool showEdgeTrigger = selectedIndex == 7 || selectedIndex == 8; // 边沿触发
-            bool showPercentage = selectedIndex == 9; // 百分比触发
-            bool showStringConditions = selectedIndex >= 10 && selectedIndex <= 12; // 字符串条件
+            var condition = (TriggerCondition)cmbTriggerCondition.SelectedIndex;
 
-            lblTriggerThreshold.Visible=showThreshold||showPercentage;
-            numTriggerThreshold.Visible=lblTriggerThreshold.Visible;
+            // 根据条件类型显示/隐藏控件
+            bool isStringCondition = condition >= TriggerCondition.Contains &&
+                                condition <= TriggerCondition.EndsWith;
+            bool isNumericCondition = condition >= TriggerCondition.GreaterThan &&
+                                 condition <= TriggerCondition.ChangePercentage;
+            bool isEdgeCondition = condition == TriggerCondition.RisingEdge ||
+                              condition == TriggerCondition.FallingEdge;
 
-            chkTriggerRisingEdge.Visible=showEdgeTrigger;
-            chkTriggerFallingEdge.Visible=showEdgeTrigger;
+            // 字符串条件显示字符串阈值框，隐藏数字阈值
+            txtStringThreshold.Visible=isStringCondition;
+            lblStringThreshold.Visible=isStringCondition;
+            numTriggerThreshold.Visible=isNumericCondition&&!isStringCondition;
+            lblTriggerThreshold.Visible=isNumericCondition||isStringCondition;
 
-            lblTriggerDelay.Visible=selectedIndex!=0;
-            numTriggerDelay.Visible=selectedIndex!=0;
-            labTriggerAddress.Visible=selectedIndex==0;
-            cmbTriggerAddress.Visible=selectedIndex==0;
-            btnRefreshAddress.Visible=selectedIndex==0;
+            // 边沿触发显示边沿选项
+            chkTriggerRisingEdge.Visible=isEdgeCondition;
+            chkTriggerFallingEdge.Visible=isEdgeCondition;
+
+            // 高级选项
+            numConsecutiveCount.Visible=condition!=TriggerCondition.None;
+            numCooldownSeconds.Visible=condition!=TriggerCondition.None;
+            lblConsecutiveCount.Visible=condition!=TriggerCondition.None;
+            lblCooldownSeconds.Visible=condition!=TriggerCondition.None;
+            chkResetOnSuccess.Visible=condition!=TriggerCondition.None;
+
             // 更新标签文本
-            if (showPercentage) {
-                lblTriggerThreshold.Text="变化百分比(%):";
-                numTriggerThreshold.DecimalPlaces=2;
-                numTriggerThreshold.Increment=0.1m;
-                }
-            else if (showThreshold) {
-                lblTriggerThreshold.Text="触发阈值:";
-                numTriggerThreshold.DecimalPlaces=3;
-                numTriggerThreshold.Increment=0.001m;
+            UpdateThresholdLabelText(condition);
+            }
+        /// <summary>
+        /// 更新阈值标签文本
+        /// </summary>
+        private void UpdateThresholdLabelText( TriggerCondition condition ) {
+            switch (condition) {
+                case TriggerCondition.ChangePercentage:
+                    lblTriggerThreshold.Text="变化百分比(%):";
+                    break;
+                case TriggerCondition.Contains:
+                case TriggerCondition.StartsWith:
+                case TriggerCondition.EndsWith:
+                    lblTriggerThreshold.Text="比较字符串:";
+                    break;
+                default:
+                    lblTriggerThreshold.Text="触发阈值:";
+                    break;
                 }
             }
         private void FormPLCAddressConfig_Load( object sender,EventArgs e ) {
@@ -109,7 +129,46 @@ namespace CosmxMESClient {
                     MessageBoxButtons.OK,MessageBoxIcon.Error);
                 }
             }
+        /// <summary>
+        /// 验证触发条件配置
+        /// </summary>
+        private bool ValidateTriggerConditions( ) {
+            var condition = (TriggerCondition)cmbTriggerCondition.SelectedIndex;
 
+            if (condition!=TriggerCondition.None) {
+                // 验证字符串条件
+                if (condition>=TriggerCondition.Contains&&condition<=TriggerCondition.EndsWith) {
+                    if (string.IsNullOrEmpty(txtStringThreshold.Text)) {
+                        MessageBox.Show("字符串条件必须设置比较字符串","验证错误",
+                            MessageBoxButtons.OK,MessageBoxIcon.Warning);
+                        txtStringThreshold.Focus( );
+                        return false;
+                        }
+                    }
+
+                // 验证数值条件
+                if (condition>=TriggerCondition.GreaterThan&&condition<=TriggerCondition.ChangePercentage) {
+                    if (numTriggerThreshold.Value==0&&condition!=TriggerCondition.Equal) {
+                        if (MessageBox.Show("触发阈值为0，是否继续？","警告",
+                            MessageBoxButtons.YesNo,MessageBoxIcon.Warning)==DialogResult.No) {
+                            numTriggerThreshold.Focus( );
+                            return false;
+                            }
+                        }
+                    }
+
+                // 验证边沿触发
+                if (condition==TriggerCondition.RisingEdge||condition==TriggerCondition.FallingEdge) {
+                    if (!chkTriggerRisingEdge.Checked&&!chkTriggerFallingEdge.Checked) {
+                        MessageBox.Show("请至少选择一种边沿触发方式","验证错误",
+                            MessageBoxButtons.OK,MessageBoxIcon.Warning);
+                        return false;
+                        }
+                    }
+                }
+
+            return true;
+            }
         private void LoadAddresses( ) {
             lvAddresses.Items.Clear( );
 
@@ -499,7 +558,7 @@ namespace CosmxMESClient {
                 // 测试扫描地址的触发条件
                 for (int i = 0; i<5; i++) {
                     object testValue = GenerateTestValue(scanAddress.DataType, i);
-                    bool triggered = scanAddress.CheckTriggerCondition(testValue, scanAddress.LastValue);
+                    bool triggered = scanAddress.CheckTriggerConditionEnhanced(testValue, scanAddress.LastValue).IsTriggered;
 
                     LoggingService.Info($"触发条件测试 [{i}]: 值={testValue}, 触发={triggered}");
 
@@ -723,6 +782,19 @@ namespace CosmxMESClient {
                 txtAddress.Focus( );
                 return false;
                 }
+
+            string triggerKey = cmbTriggerAddress.SelectedItem.ToString();
+            string dependentKey = _currentAddress.Key;
+
+            // 验证依赖关系
+            var validationResult = PLCAddressManager.Instance.ValidateTriggerDependency(triggerKey, dependentKey);
+
+            if (!validationResult.IsValid) {
+                MessageBox.Show($"依赖关系验证失败:\n{string.Join("\n",validationResult.Errors)}","验证错误",
+                    MessageBoxButtons.OK,MessageBoxIcon.Error);
+                return false;
+                }
+
 
             if (cmbDataType.SelectedItem==null) {
                 MessageBox.Show("请选择数据类型","验证错误",

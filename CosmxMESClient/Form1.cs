@@ -524,7 +524,7 @@ namespace CosmxMESClient {
                     if (address!=null) {
                         // 如果这个地址是触发地址，检查是否满足条件
                         if (address.TriggerCondition!=TriggerCondition.None) {
-                            bool triggered = address.CheckTriggerCondition(e.Value, address.LastValue);
+                            bool triggered = address.CheckTriggerConditionEnhanced(e.Value, address.LastValue).IsTriggered;
                             if (triggered) {
                                 // 触发依赖此地址的所有扫描地址
                                 _=PLCAddressManager.Instance.TriggerDependentReadsAsync(address.Key,config);

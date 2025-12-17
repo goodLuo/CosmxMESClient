@@ -139,7 +139,7 @@ namespace CosmxMESClient {
                         address.Address,value,address.DataType,config.PLCInstance.IPEnd));
 
                     // 检查触发条件
-                    address.CheckTriggerCondition(value,address.LastValue);
+                    address.CheckTriggerConditionEnhanced(value,address.LastValue);
                     address.LastValue=value;
                     address.LastReadTime=DateTime.Now;
 
@@ -152,8 +152,7 @@ namespace CosmxMESClient {
             return false;
             }
         private async Task<object> ReadAddressByType( PLCConnectionConfig config,PLCAddressConfig address ) {
-            return await Task.Run<object>(( ) =>
-            {
+            return await Task.Run<object>(( ) => {
                 try {
                     switch (address.DataType) {
                         case TypeCode.Boolean:
@@ -233,14 +232,228 @@ namespace CosmxMESClient {
                     }
             });
             }
+        /// <summary>
+        /// 增强的触发依赖检查
+        /// </summary>
+        public async Task<DependencyTriggerResult> TriggerDependentReadsEnhancedAsync(
+            string triggerKey,
+            PLCConnectionConfig config,
+            object triggerValue ) {
+            var result = new DependencyTriggerResult { TriggerKey = triggerKey };
 
+            if (!_triggerDependencies.TryGetValue(triggerKey,out var dependents)) {
+                result.Reason="无依赖地址";
+                return result;
+                }
+
+            var tasks = new List<Task<DependencyAddressResult>>();
+            var enabledDependents = dependents.Where(d => d.IsEnabled).ToList();
+
+            foreach (var dependent in enabledDependents) {
+                tasks.Add(ProcessDependentAddressAsync(config,dependent,triggerValue));
+                }
+
+            if (tasks.Count>0) {
+                var results = await Task.WhenAll(tasks);
+                result.TriggeredAddresses=results.Where(r => r.IsTriggered).ToList( );
+                result.SuccessCount=result.TriggeredAddresses.Count;
+                result.TotalCount=enabledDependents.Count;
+                result.Reason=$"成功触发 {result.SuccessCount}/{result.TotalCount} 个依赖地址";
+                }
+
+            return result;
+            }
+        /// <summary>
+        /// 处理依赖地址
+        /// </summary>
+        private async Task<DependencyAddressResult> ProcessDependentAddressAsync(
+            PLCConnectionConfig config,
+            PLCScanAddress dependent,
+            object triggerValue ) {
+            var result = new DependencyAddressResult
+                {
+                AddressKey = dependent.Key,
+                AddressName = dependent.Description
+                };
+
+            try {
+                // 检查是否应该触发依赖地址
+                if (ShouldTriggerDependent(dependent,triggerValue)) {
+                    result.ShouldTrigger=true;
+
+                    // 执行手动读取
+                    var readResult = await ManualReadScanAddressAsync(config, dependent);
+                    result.IsTriggered=readResult;
+                    result.ReadValue=dependent.LastValue;
+                    result.Reason=readResult ? "依赖触发成功" : "依赖触发读取失败";
+
+                    if (readResult) {
+                        LoggingService.Debug($"依赖触发成功: {dependent.Key} -> 值: {dependent.LastValue}");
+                        }
+                    }
+                else {
+                    result.Reason="依赖触发条件不满足";
+                    }
+                }
+            catch (Exception ex) {
+                result.IsTriggered=false;
+                result.Reason=$"依赖触发异常: {ex.Message}";
+                LoggingService.Error($"处理依赖地址异常: {dependent.Key}",ex);
+                }
+
+            return result;
+            }
+        /// <summary>
+        /// 检查是否应该触发依赖地址
+        /// </summary>
+        private bool ShouldTriggerDependent( PLCScanAddress dependent,object triggerValue ) {
+            // 如果依赖地址没有设置触发条件，直接触发
+            if (dependent.TriggerCondition==TriggerCondition.None)
+                return true;
+
+            // 使用触发值来检查依赖地址的触发条件
+            var triggerResult = dependent.CheckTriggerConditionEnhanced(triggerValue, dependent.LastValue);
+            return triggerResult.IsTriggered;
+            }
+        /// <summary>
+        /// 验证触发依赖关系
+        /// </summary>
+        public DependencyValidationResult ValidateTriggerDependency( string triggerKey,string dependentKey ) {
+            var result = new DependencyValidationResult
+                {
+                TriggerKey = triggerKey,
+                DependentKey = dependentKey
+                };
+
+            // 检查自身依赖
+            if (triggerKey==dependentKey) {
+                result.IsValid=false;
+                result.Errors.Add("不能依赖自身");
+                return result;
+                }
+
+            // 检查循环依赖
+            if (HasCircularDependency(triggerKey,dependentKey)) {
+                result.IsValid=false;
+                result.Errors.Add("检测到循环依赖");
+                return result;
+                }
+
+            // 检查依赖深度（防止过深的依赖链）
+            var depth = CalculateDependencyDepth(triggerKey, dependentKey);
+            if (depth>10) // 最大深度限制
+            {
+                result.IsValid=false;
+                result.Errors.Add($"依赖链过深: {depth}层（最大10层）");
+                }
+
+            result.IsValid=true;
+            return result;
+            }
+        /// <summary>
+        /// 检查循环依赖
+        /// </summary>
+        private bool HasCircularDependency( string currentKey,string targetKey ) {
+            if (!_triggerDependencies.ContainsKey(targetKey))
+                return false;
+
+            var visited = new HashSet<string> { currentKey };
+            var queue = new Queue<string>();
+            queue.Enqueue(targetKey);
+
+            while (queue.Count>0) {
+                var key = queue.Dequeue();
+                if (visited.Contains(key))
+                    return true;
+
+                visited.Add(key);
+
+                if (_triggerDependencies.TryGetValue(key,out var dependents)) {
+                    foreach (var dependent in dependents) {
+                        queue.Enqueue(dependent.Key);
+                        }
+                    }
+                }
+
+            return false;
+            }
+        /// <summary>
+        /// 计算依赖深度
+        /// </summary>
+        private int CalculateDependencyDepth( string startKey,string targetKey,int currentDepth = 0 ) {
+            if (currentDepth>20)
+                return currentDepth; // 防止无限递归
+
+            if (!_triggerDependencies.ContainsKey(startKey))
+                return currentDepth;
+
+            var dependents = _triggerDependencies[startKey];
+            foreach (var dependent in dependents) {
+                if (dependent.Key==targetKey)
+                    return currentDepth+1;
+
+                var depth = CalculateDependencyDepth(dependent.Key, targetKey, currentDepth + 1);
+                if (depth>0)
+                    return depth;
+                }
+
+            return 0;
+            }
+        /// <summary>
+        /// 获取所有触发依赖关系树
+        /// </summary>
+        public DependencyTree GetDependencyTree( ) {
+            var tree = new DependencyTree();
+
+            foreach (var kvp in _triggerDependencies) {
+                var node = new DependencyTreeNode
+                    {
+                    Key = kvp.Key,
+                    Dependencies = kvp.Value.Select(addr => addr.Key).ToList()
+                    };
+
+                tree.Nodes.Add(node);
+                }
+
+            return tree;
+            }
+        /// <summary>
+        /// 清理无效的依赖关系
+        /// </summary>
+        public void CleanupInvalidDependencies( ) {
+            var invalidDependencies = new List<string>();
+
+            foreach (var kvp in _triggerDependencies) {
+                // 移除不存在的PLC配置的依赖
+                var validDependents = kvp.Value.Where(dependent =>
+            _plcConfigs.Values.Any(config =>
+                config.ScanAddresses.Any(addr => addr.Key == dependent.Key))).ToList();
+
+                if (validDependents.Count!=kvp.Value.Count) {
+                    _triggerDependencies[kvp.Key]=validDependents;
+                    LoggingService.Info($"清理无效依赖: {kvp.Key} -> 移除{kvp.Value.Count-validDependents.Count}个无效依赖");
+                    }
+
+                // 如果触发键不存在于任何PLC配置中，标记为无效
+                if (!_plcConfigs.Values.Any(config =>
+                    config.ScanAddresses.Any(addr => addr.Key==kvp.Key))) {
+                    invalidDependencies.Add(kvp.Key);
+                    }
+                }
+
+            // 移除无效的依赖关系
+            foreach (var invalidKey in invalidDependencies) {
+                _triggerDependencies.Remove(invalidKey);
+                LoggingService.Info($"移除无效触发键的依赖关系: {invalidKey}");
+                }
+            }
         // 增强的触发条件检查
         private bool CheckTriggerCondition( PLCScanAddress address,object newValue ) {
             // 无触发条件或首次读取时直接通过
             if (address.TriggerCondition==TriggerCondition.None&&address.TriggerPLCScanAddress!=null||address.LastValue==null) {
                 return true;
                 }
-            bool triggered = address.CheckTriggerCondition(newValue, address.LastValue);
+            bool triggered = address.CheckTriggerConditionEnhanced(newValue, address.LastValue).IsTriggered;
             return triggered;
             }
         //清空动作
@@ -316,6 +529,69 @@ namespace CosmxMESClient {
             public List<PLCScanAddress> GetTriggerAddresses( string plcKey ) {
                 return _plcTriggers.TryGetValue(plcKey,out var addresses) ? addresses : new List<PLCScanAddress>( );
                 }
+            }
+        /// <summary>
+        /// 依赖关系结果类
+        /// </summary>
+        public class DependencyTriggerResult {
+            public string TriggerKey {
+                get; set;
+                }
+            public int SuccessCount {
+                get; set;
+                }
+            public int TotalCount {
+                get; set;
+                }
+            public string Reason {
+                get; set;
+                }
+            public List<DependencyAddressResult> TriggeredAddresses { get; set; } = new List<DependencyAddressResult>( );
+            }
+
+        public class DependencyAddressResult {
+            public string AddressKey {
+                get; set;
+                }
+            public string AddressName {
+                get; set;
+                }
+            public bool ShouldTrigger {
+                get; set;
+                }
+            public bool IsTriggered {
+                get; set;
+                }
+            public object ReadValue {
+                get; set;
+                }
+            public string Reason {
+                get; set;
+                }
+            }
+
+        public class DependencyValidationResult {
+            public string TriggerKey {
+                get; set;
+                }
+            public string DependentKey {
+                get; set;
+                }
+            public bool IsValid {
+                get; set;
+                }
+            public List<string> Errors { get; set; } = new List<string>( );
+            }
+
+        public class DependencyTree {
+            public List<DependencyTreeNode> Nodes { get; set; } = new List<DependencyTreeNode>( );
+            }
+
+        public class DependencyTreeNode {
+            public string Key {
+                get; set;
+                }
+            public List<string> Dependencies { get; set; } = new List<string>( );
             }
         }
     }
