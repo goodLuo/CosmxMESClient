@@ -21,9 +21,6 @@ namespace CosmxMESClient {
         // 使用可绑定的集合替代Dictionary
         public BindingList<PLCSendAddress> SendAddresses { get; set; } = new BindingList<PLCSendAddress>( );
 
-        // 对外暴露BindingList
-        private Dictionary<string, PLCScanAddress> _scanAddressesDict = new Dictionary<string, PLCScanAddress>();
-        private Dictionary<string, PLCSendAddress> _sendAddressesDict = new Dictionary<string, PLCSendAddress>();
         private readonly object _addressLock = new object();
         // 添加连接状态变化事件
         public event EventHandler<ConnectionStatusChangedEventArgs> ConnectionStatusChanged;
@@ -227,11 +224,11 @@ namespace CosmxMESClient {
                     address.Key=GenerateAddressKey(address.Key,AddressDirection.ReadOnly);
                     }
 
-                if (_scanAddressesDict.ContainsKey(address.Key)) {
-                    throw new ArgumentException($"发送地址键值已存在: {address.Key}");
-                    }
+                //if (_scanAddressesDict.ContainsKey(address.Key)) {
+                //    throw new ArgumentException($"发送地址键值已存在: {address.Key}");
+                //    }
 
-                _scanAddressesDict[address.Key]=address;
+               // _scanAddressesDict[address.Key]=address;
                 ScanAddresses.Add(address); // 添加到可绑定集合
                 return true;
                 }
@@ -241,11 +238,11 @@ namespace CosmxMESClient {
                 address.Key=GenerateAddressKey(address.Key,AddressDirection.WriteOnly);
                 }
 
-            if (_sendAddressesDict.ContainsKey(address.Key)) {
-                throw new ArgumentException($"发送地址键值已存在: {address.Key}");
-                }
+            //if (_sendAddressesDict.ContainsKey(address.Key)) {
+            //    throw new ArgumentException($"发送地址键值已存在: {address.Key}");
+            //    }
 
-            _sendAddressesDict[address.Key]=address;
+            //_sendAddressesDict[address.Key]=address;
             SendAddresses.Add(address); // 添加到可绑定集合
             return true;
             }
@@ -281,29 +278,7 @@ namespace CosmxMESClient {
 
 
 
-        public bool RemoveScanAddress( string key ) {
-            lock (_addressLock) {
-                if (_scanAddressesDict.Remove(key)) {
-                    var addressToRemove = ScanAddresses.FirstOrDefault(a => a.Key == key);
-                    if (addressToRemove!=null) {
-                        ScanAddresses.Remove(addressToRemove);
-                        }
-                    return true;
-                    }
-                return false;
-                }
-            }
-
-        public bool RemoveSendAddress( string key ) {
-            if (_sendAddressesDict.Remove(key)) {
-                var addressToRemove = SendAddresses.FirstOrDefault(a => a.Key == key);
-                if (addressToRemove!=null) {
-                    SendAddresses.Remove(addressToRemove);
-                    }
-                return true;
-                }
-            return false;
-            }
+      
 
         private string GenerateAddressKey( string name,AddressDirection direction ) {
             string prefix;

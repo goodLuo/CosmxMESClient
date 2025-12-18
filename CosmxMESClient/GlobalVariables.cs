@@ -14,5 +14,8 @@ namespace CosmxMESClient {
         /// 扫描地址配置
         /// </summary>
         public static Dictionary<string,PLCScanAddress> AvailableTriggerAddresses=new Dictionary<string, PLCScanAddress>();
-        }
+
+        public static Dictionary<string, PLCScanAddress> AllAvailableTriggerAddresses = new Dictionary<string, PLCScanAddress>();
+
+    }
     }

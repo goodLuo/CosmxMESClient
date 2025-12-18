@@ -47,6 +47,7 @@
             this.columnHeader12 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.grpAddressList = new System.Windows.Forms.GroupBox();
             this.lvAddresses = new System.Windows.Forms.ListView();
+            this.columnHeader13 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.grpAddressConfig = new System.Windows.Forms.GroupBox();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.lblName = new System.Windows.Forms.Label();
@@ -73,11 +74,21 @@
             this.cmbTriggerCondition = new System.Windows.Forms.ComboBox();
             this.lblTriggerThreshold = new System.Windows.Forms.Label();
             this.numTriggerThreshold = new System.Windows.Forms.NumericUpDown();
+            this.lblTriggerHelp = new System.Windows.Forms.Label();
+            this.labTriggerAddress = new System.Windows.Forms.Label();
+            this.cmbTriggerAddress = new System.Windows.Forms.ComboBox();
+            this.btnRefreshAddress = new System.Windows.Forms.Button();
             this.lblTriggerDelay = new System.Windows.Forms.Label();
             this.numTriggerDelay = new System.Windows.Forms.NumericUpDown();
-            this.chkTriggerRisingEdge = new System.Windows.Forms.CheckBox();
+            this.txtStringThreshold = new System.Windows.Forms.TextBox();
             this.chkTriggerFallingEdge = new System.Windows.Forms.CheckBox();
-            this.lblTriggerHelp = new System.Windows.Forms.Label();
+            this.chkTriggerRisingEdge = new System.Windows.Forms.CheckBox();
+            this.numCooldownSeconds = new System.Windows.Forms.NumericUpDown();
+            this.numConsecutiveCount = new System.Windows.Forms.NumericUpDown();
+            this.chkResetOnSuccess = new System.Windows.Forms.CheckBox();
+            this.lblConsecutiveCount = new System.Windows.Forms.Label();
+            this.lblStringThreshold = new System.Windows.Forms.Label();
+            this.lblCooldownSeconds = new System.Windows.Forms.Label();
             this.grpActions = new System.Windows.Forms.GroupBox();
             this.btnDelete = new System.Windows.Forms.Button();
             this.btnEdit = new System.Windows.Forms.Button();
@@ -89,17 +100,6 @@
             this.btnTestTrigger = new System.Windows.Forms.Button();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
-            this.labTriggerAddress = new System.Windows.Forms.Label();
-            this.cmbTriggerAddress = new System.Windows.Forms.ComboBox();
-            this.btnRefreshAddress = new System.Windows.Forms.Button();
-            this.columnHeader13 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.txtStringThreshold = new System.Windows.Forms.TextBox();
-            this.numConsecutiveCount = new System.Windows.Forms.NumericUpDown();
-            this.numCooldownSeconds = new System.Windows.Forms.NumericUpDown();
-            this.chkResetOnSuccess = new System.Windows.Forms.CheckBox();
-            this.lblConsecutiveCount = new System.Windows.Forms.Label();
-            this.lblStringThreshold = new System.Windows.Forms.Label();
-            this.lblCooldownSeconds = new System.Windows.Forms.Label();
             this.grpAddressList.SuspendLayout();
             this.grpAddressConfig.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
@@ -111,11 +111,11 @@
             this.tableLayoutPanel2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numTriggerThreshold)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numTriggerDelay)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numCooldownSeconds)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numConsecutiveCount)).BeginInit();
             this.grpActions.SuspendLayout();
             this.grpFormActions.SuspendLayout();
             this.tableLayoutPanel3.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numConsecutiveCount)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numCooldownSeconds)).BeginInit();
             this.SuspendLayout();
             // 
             // columnHeader1
@@ -204,13 +204,18 @@
             this.lvAddresses.HideSelection = false;
             this.lvAddresses.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
             listViewItem1});
-            this.lvAddresses.Location = new System.Drawing.Point(3, 26);
+            this.lvAddresses.Location = new System.Drawing.Point(3, 19);
             this.lvAddresses.Name = "lvAddresses";
-            this.lvAddresses.Size = new System.Drawing.Size(1470, 313);
+            this.lvAddresses.Size = new System.Drawing.Size(1470, 320);
             this.lvAddresses.TabIndex = 0;
             this.lvAddresses.UseCompatibleStateImageBehavior = false;
             this.lvAddresses.View = System.Windows.Forms.View.Details;
             this.lvAddresses.SelectedIndexChanged += new System.EventHandler(this.lvAddresses_SelectedIndexChanged);
+            // 
+            // columnHeader13
+            // 
+            this.columnHeader13.Text = "触发地址";
+            this.columnHeader13.Width = 205;
             // 
             // grpAddressConfig
             // 
@@ -248,7 +253,7 @@
             this.tableLayoutPanel1.Controls.Add(this.lblSendDelay, 0, 4);
             this.tableLayoutPanel1.Controls.Add(this.numSendDelay, 1, 4);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel1.Location = new System.Drawing.Point(3, 26);
+            this.tableLayoutPanel1.Location = new System.Drawing.Point(3, 19);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.RowCount = 5;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
@@ -256,7 +261,7 @@
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(1186, 175);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(1186, 182);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
             // lblName
@@ -275,7 +280,7 @@
             this.txtName.Dock = System.Windows.Forms.DockStyle.Fill;
             this.txtName.Location = new System.Drawing.Point(123, 3);
             this.txtName.Name = "txtName";
-            this.txtName.Size = new System.Drawing.Size(467, 30);
+            this.txtName.Size = new System.Drawing.Size(467, 23);
             this.txtName.TabIndex = 1;
             this.toolTip.SetToolTip(this.txtName, "地址的唯一标识名称");
             // 
@@ -295,7 +300,7 @@
             this.txtAddress.Dock = System.Windows.Forms.DockStyle.Fill;
             this.txtAddress.Location = new System.Drawing.Point(716, 3);
             this.txtAddress.Name = "txtAddress";
-            this.txtAddress.Size = new System.Drawing.Size(467, 30);
+            this.txtAddress.Size = new System.Drawing.Size(467, 23);
             this.txtAddress.TabIndex = 3;
             this.toolTip.SetToolTip(this.txtAddress, "PLC设备地址，如：D100, M200, Y0等");
             // 
@@ -324,7 +329,7 @@
             "String"});
             this.cmbDataType.Location = new System.Drawing.Point(123, 38);
             this.cmbDataType.Name = "cmbDataType";
-            this.cmbDataType.Size = new System.Drawing.Size(467, 32);
+            this.cmbDataType.Size = new System.Drawing.Size(467, 25);
             this.cmbDataType.TabIndex = 5;
             this.toolTip.SetToolTip(this.cmbDataType, "选择要读取的数据类型");
             // 
@@ -344,7 +349,7 @@
             this.txtDescription.Dock = System.Windows.Forms.DockStyle.Fill;
             this.txtDescription.Location = new System.Drawing.Point(716, 38);
             this.txtDescription.Name = "txtDescription";
-            this.txtDescription.Size = new System.Drawing.Size(467, 30);
+            this.txtDescription.Size = new System.Drawing.Size(467, 23);
             this.txtDescription.TabIndex = 7;
             this.toolTip.SetToolTip(this.txtDescription, "地址的详细描述信息");
             // 
@@ -379,7 +384,7 @@
             0,
             0});
             this.numReadInterval.Name = "numReadInterval";
-            this.numReadInterval.Size = new System.Drawing.Size(467, 30);
+            this.numReadInterval.Size = new System.Drawing.Size(467, 23);
             this.numReadInterval.TabIndex = 9;
             this.toolTip.SetToolTip(this.numReadInterval, "数据读取的时间间隔，单位毫秒");
             this.numReadInterval.Value = new decimal(new int[] {
@@ -414,7 +419,7 @@
             0,
             0});
             this.numPower.Name = "numPower";
-            this.numPower.Size = new System.Drawing.Size(467, 30);
+            this.numPower.Size = new System.Drawing.Size(467, 23);
             this.numPower.TabIndex = 11;
             this.toolTip.SetToolTip(this.numPower, "数据缩放系数，用于精度调整");
             this.numPower.Value = new decimal(new int[] {
@@ -444,7 +449,7 @@
             0,
             0});
             this.numLength.Name = "numLength";
-            this.numLength.Size = new System.Drawing.Size(467, 30);
+            this.numLength.Size = new System.Drawing.Size(467, 23);
             this.numLength.TabIndex = 13;
             this.toolTip.SetToolTip(this.numLength, "数据长度，用于数组或字符串类型");
             this.numLength.Value = new decimal(new int[] {
@@ -483,7 +488,7 @@
             this.lblSendDelay.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblSendDelay.Location = new System.Drawing.Point(3, 140);
             this.lblSendDelay.Name = "lblSendDelay";
-            this.lblSendDelay.Size = new System.Drawing.Size(114, 35);
+            this.lblSendDelay.Size = new System.Drawing.Size(114, 42);
             this.lblSendDelay.TabIndex = 16;
             this.lblSendDelay.Text = "发送延迟(ms):";
             this.lblSendDelay.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -503,7 +508,7 @@
             0,
             0});
             this.numSendDelay.Name = "numSendDelay";
-            this.numSendDelay.Size = new System.Drawing.Size(467, 30);
+            this.numSendDelay.Size = new System.Drawing.Size(467, 23);
             this.numSendDelay.TabIndex = 17;
             this.toolTip.SetToolTip(this.numSendDelay, "数据发送的延迟时间，单位毫秒");
             // 
@@ -547,7 +552,7 @@
             this.tableLayoutPanel2.Controls.Add(this.lblStringThreshold, 0, 1);
             this.tableLayoutPanel2.Controls.Add(this.lblCooldownSeconds, 4, 1);
             this.tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel2.Location = new System.Drawing.Point(3, 26);
+            this.tableLayoutPanel2.Location = new System.Drawing.Point(3, 19);
             this.tableLayoutPanel2.Name = "tableLayoutPanel2";
             this.tableLayoutPanel2.RowCount = 5;
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
@@ -556,7 +561,7 @@
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.tableLayoutPanel2.Size = new System.Drawing.Size(1470, 175);
+            this.tableLayoutPanel2.Size = new System.Drawing.Size(1470, 182);
             this.tableLayoutPanel2.TabIndex = 0;
             // 
             // lblTriggerCondition
@@ -591,7 +596,7 @@
             "以...结束触发"});
             this.cmbTriggerCondition.Location = new System.Drawing.Point(123, 3);
             this.cmbTriggerCondition.Name = "cmbTriggerCondition";
-            this.cmbTriggerCondition.Size = new System.Drawing.Size(804, 32);
+            this.cmbTriggerCondition.Size = new System.Drawing.Size(804, 25);
             this.cmbTriggerCondition.TabIndex = 1;
             this.toolTip.SetToolTip(this.cmbTriggerCondition, "选择数据读取的触发条件");
             this.cmbTriggerCondition.SelectedIndexChanged += new System.EventHandler(this.cmbTriggerCondition_SelectedIndexChanged);
@@ -628,9 +633,71 @@
             0,
             -2147483648});
             this.numTriggerThreshold.Name = "numTriggerThreshold";
-            this.numTriggerThreshold.Size = new System.Drawing.Size(114, 30);
+            this.numTriggerThreshold.Size = new System.Drawing.Size(114, 23);
             this.numTriggerThreshold.TabIndex = 3;
             this.toolTip.SetToolTip(this.numTriggerThreshold, "设置触发条件的阈值");
+            // 
+            // lblTriggerHelp
+            // 
+            this.tableLayoutPanel2.SetColumnSpan(this.lblTriggerHelp, 6);
+            this.lblTriggerHelp.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblTriggerHelp.Font = new System.Drawing.Font("Microsoft YaHei UI", 8F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.lblTriggerHelp.ForeColor = System.Drawing.Color.Gray;
+            this.lblTriggerHelp.Location = new System.Drawing.Point(0, 162);
+            this.lblTriggerHelp.Margin = new System.Windows.Forms.Padding(0);
+            this.lblTriggerHelp.Name = "lblTriggerHelp";
+            this.lblTriggerHelp.Size = new System.Drawing.Size(1470, 20);
+            this.lblTriggerHelp.TabIndex = 8;
+            this.lblTriggerHelp.Text = "提示：触发条件用于控制数据读取的时机。当满足条件时才进行数据采集，提高系统效率。";
+            this.lblTriggerHelp.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // labTriggerAddress
+            // 
+            this.labTriggerAddress.AutoSize = true;
+            this.labTriggerAddress.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.labTriggerAddress.Location = new System.Drawing.Point(3, 105);
+            this.labTriggerAddress.Name = "labTriggerAddress";
+            this.labTriggerAddress.Size = new System.Drawing.Size(114, 35);
+            this.labTriggerAddress.TabIndex = 9;
+            this.labTriggerAddress.Text = "触发地址:";
+            this.labTriggerAddress.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // cmbTriggerAddress
+            // 
+            this.cmbTriggerAddress.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.cmbTriggerAddress.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbTriggerAddress.FormattingEnabled = true;
+            this.cmbTriggerAddress.Items.AddRange(new object[] {
+            "无触发条件",
+            "大于阈值触发",
+            "小于阈值触发",
+            "等于阈值触发",
+            "大于等于阈值触发",
+            "小于等于阈值触发",
+            "不等于阈值触发",
+            "上升沿触发",
+            "下降沿触发",
+            "变化百分比触发",
+            "包含字符串触发",
+            "以...开始触发",
+            "以...结束触发"});
+            this.cmbTriggerAddress.Location = new System.Drawing.Point(123, 108);
+            this.cmbTriggerAddress.Name = "cmbTriggerAddress";
+            this.cmbTriggerAddress.Size = new System.Drawing.Size(804, 25);
+            this.cmbTriggerAddress.TabIndex = 10;
+            this.toolTip.SetToolTip(this.cmbTriggerAddress, "选择数据读取的触发条件");
+            // 
+            // btnRefreshAddress
+            // 
+            this.btnRefreshAddress.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnRefreshAddress.Location = new System.Drawing.Point(930, 105);
+            this.btnRefreshAddress.Margin = new System.Windows.Forms.Padding(0);
+            this.btnRefreshAddress.Name = "btnRefreshAddress";
+            this.btnRefreshAddress.Size = new System.Drawing.Size(120, 35);
+            this.btnRefreshAddress.TabIndex = 11;
+            this.btnRefreshAddress.Text = "刷新地址表";
+            this.btnRefreshAddress.UseVisualStyleBackColor = true;
+            this.btnRefreshAddress.Click += new System.EventHandler(this.btnRefreshAddress_Click);
             // 
             // lblTriggerDelay
             // 
@@ -658,7 +725,7 @@
             0,
             0});
             this.numTriggerDelay.Name = "numTriggerDelay";
-            this.numTriggerDelay.Size = new System.Drawing.Size(804, 30);
+            this.numTriggerDelay.Size = new System.Drawing.Size(804, 23);
             this.numTriggerDelay.TabIndex = 5;
             this.toolTip.SetToolTip(this.numTriggerDelay, "触发后的延迟时间，防止频繁触发");
             this.numTriggerDelay.Value = new decimal(new int[] {
@@ -667,41 +734,109 @@
             0,
             0});
             // 
-            // chkTriggerRisingEdge
+            // txtStringThreshold
             // 
-            this.chkTriggerRisingEdge.AutoSize = true;
-            this.chkTriggerRisingEdge.Location = new System.Drawing.Point(1173, 73);
-            this.chkTriggerRisingEdge.Name = "chkTriggerRisingEdge";
-            this.chkTriggerRisingEdge.Size = new System.Drawing.Size(126, 28);
-            this.chkTriggerRisingEdge.TabIndex = 6;
-            this.chkTriggerRisingEdge.Text = "上升沿触发";
-            this.toolTip.SetToolTip(this.chkTriggerRisingEdge, "在数值上升时触发");
-            this.chkTriggerRisingEdge.UseVisualStyleBackColor = true;
+            this.txtStringThreshold.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.txtStringThreshold.Location = new System.Drawing.Point(123, 38);
+            this.txtStringThreshold.Name = "txtStringThreshold";
+            this.txtStringThreshold.Size = new System.Drawing.Size(804, 23);
+            this.txtStringThreshold.TabIndex = 12;
             // 
             // chkTriggerFallingEdge
             // 
             this.chkTriggerFallingEdge.AutoSize = true;
             this.chkTriggerFallingEdge.Location = new System.Drawing.Point(1323, 73);
             this.chkTriggerFallingEdge.Name = "chkTriggerFallingEdge";
-            this.chkTriggerFallingEdge.Size = new System.Drawing.Size(126, 28);
+            this.chkTriggerFallingEdge.Size = new System.Drawing.Size(87, 21);
             this.chkTriggerFallingEdge.TabIndex = 7;
             this.chkTriggerFallingEdge.Text = "下降沿触发";
             this.toolTip.SetToolTip(this.chkTriggerFallingEdge, "在数值下降时触发");
             this.chkTriggerFallingEdge.UseVisualStyleBackColor = true;
             // 
-            // lblTriggerHelp
+            // chkTriggerRisingEdge
             // 
-            this.tableLayoutPanel2.SetColumnSpan(this.lblTriggerHelp, 6);
-            this.lblTriggerHelp.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblTriggerHelp.Font = new System.Drawing.Font("Microsoft YaHei UI", 8F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.lblTriggerHelp.ForeColor = System.Drawing.Color.Gray;
-            this.lblTriggerHelp.Location = new System.Drawing.Point(0, 155);
-            this.lblTriggerHelp.Margin = new System.Windows.Forms.Padding(0);
-            this.lblTriggerHelp.Name = "lblTriggerHelp";
-            this.lblTriggerHelp.Size = new System.Drawing.Size(1470, 20);
-            this.lblTriggerHelp.TabIndex = 8;
-            this.lblTriggerHelp.Text = "提示：触发条件用于控制数据读取的时机。当满足条件时才进行数据采集，提高系统效率。";
-            this.lblTriggerHelp.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.chkTriggerRisingEdge.AutoSize = true;
+            this.chkTriggerRisingEdge.Location = new System.Drawing.Point(1173, 73);
+            this.chkTriggerRisingEdge.Name = "chkTriggerRisingEdge";
+            this.chkTriggerRisingEdge.Size = new System.Drawing.Size(87, 21);
+            this.chkTriggerRisingEdge.TabIndex = 6;
+            this.chkTriggerRisingEdge.Text = "上升沿触发";
+            this.toolTip.SetToolTip(this.chkTriggerRisingEdge, "在数值上升时触发");
+            this.chkTriggerRisingEdge.UseVisualStyleBackColor = true;
+            // 
+            // numCooldownSeconds
+            // 
+            this.numCooldownSeconds.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.numCooldownSeconds.Location = new System.Drawing.Point(1323, 38);
+            this.numCooldownSeconds.Maximum = new decimal(new int[] {
+            3600,
+            0,
+            0,
+            0});
+            this.numCooldownSeconds.Name = "numCooldownSeconds";
+            this.numCooldownSeconds.Size = new System.Drawing.Size(144, 23);
+            this.numCooldownSeconds.TabIndex = 14;
+            // 
+            // numConsecutiveCount
+            // 
+            this.numConsecutiveCount.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.numConsecutiveCount.Location = new System.Drawing.Point(1053, 38);
+            this.numConsecutiveCount.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numConsecutiveCount.Name = "numConsecutiveCount";
+            this.numConsecutiveCount.Size = new System.Drawing.Size(114, 23);
+            this.numConsecutiveCount.TabIndex = 13;
+            this.numConsecutiveCount.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            // 
+            // chkResetOnSuccess
+            // 
+            this.chkResetOnSuccess.AutoSize = true;
+            this.chkResetOnSuccess.Checked = true;
+            this.chkResetOnSuccess.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.tableLayoutPanel2.SetColumnSpan(this.chkResetOnSuccess, 2);
+            this.chkResetOnSuccess.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.chkResetOnSuccess.Location = new System.Drawing.Point(933, 73);
+            this.chkResetOnSuccess.Name = "chkResetOnSuccess";
+            this.chkResetOnSuccess.Size = new System.Drawing.Size(234, 29);
+            this.chkResetOnSuccess.TabIndex = 15;
+            this.chkResetOnSuccess.Text = "触发成功后重置计数";
+            this.chkResetOnSuccess.UseVisualStyleBackColor = true;
+            // 
+            // lblConsecutiveCount
+            // 
+            this.lblConsecutiveCount.AutoSize = true;
+            this.lblConsecutiveCount.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblConsecutiveCount.Location = new System.Drawing.Point(933, 35);
+            this.lblConsecutiveCount.Name = "lblConsecutiveCount";
+            this.lblConsecutiveCount.Size = new System.Drawing.Size(114, 35);
+            this.lblConsecutiveCount.TabIndex = 16;
+            this.lblConsecutiveCount.Text = "连续计数:";
+            // 
+            // lblStringThreshold
+            // 
+            this.lblStringThreshold.AutoSize = true;
+            this.lblStringThreshold.Location = new System.Drawing.Point(3, 35);
+            this.lblStringThreshold.Name = "lblStringThreshold";
+            this.lblStringThreshold.Size = new System.Drawing.Size(71, 17);
+            this.lblStringThreshold.TabIndex = 17;
+            this.lblStringThreshold.Text = "字符串阈值:";
+            // 
+            // lblCooldownSeconds
+            // 
+            this.lblCooldownSeconds.AutoSize = true;
+            this.lblCooldownSeconds.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblCooldownSeconds.Location = new System.Drawing.Point(1173, 35);
+            this.lblCooldownSeconds.Name = "lblCooldownSeconds";
+            this.lblCooldownSeconds.Size = new System.Drawing.Size(144, 35);
+            this.lblCooldownSeconds.TabIndex = 18;
+            this.lblCooldownSeconds.Text = "冷却时间:";
             // 
             // grpActions
             // 
@@ -841,144 +976,9 @@
             this.tableLayoutPanel3.Size = new System.Drawing.Size(1482, 888);
             this.tableLayoutPanel3.TabIndex = 5;
             // 
-            // labTriggerAddress
-            // 
-            this.labTriggerAddress.AutoSize = true;
-            this.labTriggerAddress.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.labTriggerAddress.Location = new System.Drawing.Point(3, 105);
-            this.labTriggerAddress.Name = "labTriggerAddress";
-            this.labTriggerAddress.Size = new System.Drawing.Size(114, 35);
-            this.labTriggerAddress.TabIndex = 9;
-            this.labTriggerAddress.Text = "触发地址:";
-            this.labTriggerAddress.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // cmbTriggerAddress
-            // 
-            this.cmbTriggerAddress.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.cmbTriggerAddress.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cmbTriggerAddress.FormattingEnabled = true;
-            this.cmbTriggerAddress.Items.AddRange(new object[] {
-            "无触发条件",
-            "大于阈值触发",
-            "小于阈值触发",
-            "等于阈值触发",
-            "大于等于阈值触发",
-            "小于等于阈值触发",
-            "不等于阈值触发",
-            "上升沿触发",
-            "下降沿触发",
-            "变化百分比触发",
-            "包含字符串触发",
-            "以...开始触发",
-            "以...结束触发"});
-            this.cmbTriggerAddress.Location = new System.Drawing.Point(123, 108);
-            this.cmbTriggerAddress.Name = "cmbTriggerAddress";
-            this.cmbTriggerAddress.Size = new System.Drawing.Size(804, 32);
-            this.cmbTriggerAddress.TabIndex = 10;
-            this.toolTip.SetToolTip(this.cmbTriggerAddress, "选择数据读取的触发条件");
-            // 
-            // btnRefreshAddress
-            // 
-            this.btnRefreshAddress.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnRefreshAddress.Location = new System.Drawing.Point(930, 105);
-            this.btnRefreshAddress.Margin = new System.Windows.Forms.Padding(0);
-            this.btnRefreshAddress.Name = "btnRefreshAddress";
-            this.btnRefreshAddress.Size = new System.Drawing.Size(120, 35);
-            this.btnRefreshAddress.TabIndex = 11;
-            this.btnRefreshAddress.Text = "刷新地址表";
-            this.btnRefreshAddress.UseVisualStyleBackColor = true;
-            this.btnRefreshAddress.Click += new System.EventHandler(this.btnRefreshAddress_Click);
-            // 
-            // columnHeader13
-            // 
-            this.columnHeader13.Text = "触发地址";
-            this.columnHeader13.Width = 205;
-            // 
-            // txtStringThreshold
-            // 
-            this.txtStringThreshold.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.txtStringThreshold.Location = new System.Drawing.Point(123, 38);
-            this.txtStringThreshold.Name = "txtStringThreshold";
-            this.txtStringThreshold.Size = new System.Drawing.Size(804, 30);
-            this.txtStringThreshold.TabIndex = 12;
-            // 
-            // numConsecutiveCount
-            // 
-            this.numConsecutiveCount.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.numConsecutiveCount.Location = new System.Drawing.Point(1053, 38);
-            this.numConsecutiveCount.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.numConsecutiveCount.Name = "numConsecutiveCount";
-            this.numConsecutiveCount.Size = new System.Drawing.Size(114, 30);
-            this.numConsecutiveCount.TabIndex = 13;
-            this.numConsecutiveCount.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            // 
-            // numCooldownSeconds
-            // 
-            this.numCooldownSeconds.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.numCooldownSeconds.Location = new System.Drawing.Point(1323, 38);
-            this.numCooldownSeconds.Maximum = new decimal(new int[] {
-            3600,
-            0,
-            0,
-            0});
-            this.numCooldownSeconds.Name = "numCooldownSeconds";
-            this.numCooldownSeconds.Size = new System.Drawing.Size(144, 30);
-            this.numCooldownSeconds.TabIndex = 14;
-            // 
-            // chkResetOnSuccess
-            // 
-            this.chkResetOnSuccess.AutoSize = true;
-            this.chkResetOnSuccess.Checked = true;
-            this.chkResetOnSuccess.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.tableLayoutPanel2.SetColumnSpan(this.chkResetOnSuccess, 2);
-            this.chkResetOnSuccess.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.chkResetOnSuccess.Location = new System.Drawing.Point(933, 73);
-            this.chkResetOnSuccess.Name = "chkResetOnSuccess";
-            this.chkResetOnSuccess.Size = new System.Drawing.Size(234, 29);
-            this.chkResetOnSuccess.TabIndex = 15;
-            this.chkResetOnSuccess.Text = "触发成功后重置计数";
-            this.chkResetOnSuccess.UseVisualStyleBackColor = true;
-            // 
-            // lblConsecutiveCount
-            // 
-            this.lblConsecutiveCount.AutoSize = true;
-            this.lblConsecutiveCount.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblConsecutiveCount.Location = new System.Drawing.Point(933, 35);
-            this.lblConsecutiveCount.Name = "lblConsecutiveCount";
-            this.lblConsecutiveCount.Size = new System.Drawing.Size(114, 35);
-            this.lblConsecutiveCount.TabIndex = 16;
-            this.lblConsecutiveCount.Text = "连续计数:";
-            // 
-            // lblStringThreshold
-            // 
-            this.lblStringThreshold.AutoSize = true;
-            this.lblStringThreshold.Location = new System.Drawing.Point(3, 35);
-            this.lblStringThreshold.Name = "lblStringThreshold";
-            this.lblStringThreshold.Size = new System.Drawing.Size(104, 24);
-            this.lblStringThreshold.TabIndex = 17;
-            this.lblStringThreshold.Text = "字符串阈值:";
-            // 
-            // lblCooldownSeconds
-            // 
-            this.lblCooldownSeconds.AutoSize = true;
-            this.lblCooldownSeconds.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblCooldownSeconds.Location = new System.Drawing.Point(1173, 35);
-            this.lblCooldownSeconds.Name = "lblCooldownSeconds";
-            this.lblCooldownSeconds.Size = new System.Drawing.Size(144, 35);
-            this.lblCooldownSeconds.TabIndex = 18;
-            this.lblCooldownSeconds.Text = "冷却时间:";
-            // 
             // FormPLCAddressConfig
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 24F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1482, 888);
             this.Controls.Add(this.tableLayoutPanel3);
@@ -1001,11 +1001,11 @@
             this.tableLayoutPanel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numTriggerThreshold)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numTriggerDelay)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numCooldownSeconds)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numConsecutiveCount)).EndInit();
             this.grpActions.ResumeLayout(false);
             this.grpFormActions.ResumeLayout(false);
             this.tableLayoutPanel3.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.numConsecutiveCount)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numCooldownSeconds)).EndInit();
             this.ResumeLayout(false);
 
             }
