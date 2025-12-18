@@ -54,8 +54,8 @@ namespace CosmxMESClient
             // 设置控件数据绑定
             SetupDataBindings();
             // 初始化地址列表的绑定源
-            _scanAddressesBindingSource.DataSource = typeof(BindingList<PLCScanAddress>);
-            _sendAddressesBindingSource.DataSource = typeof(BindingList<PLCSendAddress>);
+            //_scanAddressesBindingSource.DataSource = typeof(BindingList<PLCScanAddress>);
+            //_sendAddressesBindingSource.DataSource = typeof(BindingList<PLCSendAddress>);
 
 
             // 初始化下拉框
@@ -65,8 +65,11 @@ namespace CosmxMESClient
             LoadDefaultValues();
             LoadSavedConfigs();
             // 初始化地址列表的绑定源
-            _scanAddressesBindingSource.DataSource = typeof(BindingList<PLCScanAddress>);
-            _sendAddressesBindingSource.DataSource = typeof(BindingList<PLCSendAddress>);
+            //_scanAddressesBindingSource.DataSource = typeof(BindingList<PLCScanAddress>);
+            //_sendAddressesBindingSource.DataSource = typeof(BindingList<PLCSendAddress>);
+            _scanAddressesBindingSource.DataSource = new BindingList<PLCScanAddress>();
+            _sendAddressesBindingSource.DataSource = new BindingList<PLCSendAddress>();
+
 
             // 设置数据绑定
             SetupDataGridViewDataBindings();
@@ -678,7 +681,6 @@ namespace CosmxMESClient
             // 绑定到数据源
             _scanAddressesBindingSource.DataSource = new BindingList<ScanAddressDisplayWrapper>(scanDisplayList);
             _sendAddressesBindingSource.DataSource = new BindingList<SendAddressDisplayWrapper>(sendDisplayList);
-
             UpdateAddressesSummary();
         }
         // 地址显示包装类

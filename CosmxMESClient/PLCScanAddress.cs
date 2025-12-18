@@ -672,7 +672,7 @@ namespace CosmxMESClient {
                             return config.PLCInstance.WriteFloat(action.Address,floatValue);
                         case TypeCode.Double:
                             double doubleValue = Convert.ToDouble(action.ClearValue);
-                            return config.PLCInstance.WriteDouble(action.Address,Power,doubleValue);
+                            return config.PLCInstance.WriteDouble(action.Address,doubleValue);
                         case TypeCode.String:
                             string stringValue = action.ClearValue?.ToString() ?? "";
                             return config.PLCInstance.WriteString(action.Address,stringValue);

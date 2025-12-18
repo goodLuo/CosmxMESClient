@@ -793,19 +793,19 @@ namespace CosmxMESClient
 
                     case TypeCode.Int32:
                         int intValue = 0;
-                        if (config.PLCInstance.ReadRegister(address.Address, ref intValue))
+                        if (config.PLCInstance.ReadRegister(address.Address, ref intValue, address.Power))
                             return intValue;
                         break;
 
                     case TypeCode.Single:
                         float floatValue = 0;
-                        if (config.PLCInstance.ReadFloat(address.Address, ref floatValue))
+                        if (config.PLCInstance.ReadFloat(address.Address, ref floatValue, address.Power))
                             return floatValue;
                         break;
 
                     case TypeCode.Double:
                         double doubleValue = 0;
-                        if (config.PLCInstance.ReadDouble(address.Address, address.Power, ref doubleValue))
+                        if (config.PLCInstance.ReadDouble(address.Address,  ref doubleValue, address.Power))
                             return doubleValue;
                         break;
 
@@ -834,19 +834,19 @@ namespace CosmxMESClient
 
                         case TypeCode.Int16:
                             int intValue = int.Parse(value);
-                            return config.PLCInstance.WriteRegister(address.Address, intValue);
+                            return config.PLCInstance.WriteRegister(address.Address, intValue,address.Power);
 
                         case TypeCode.Int32:
                             int int32Value = int.Parse(value);
-                            return config.PLCInstance.WriteInt32(address.Address, int32Value);
+                            return config.PLCInstance.WriteInt32(address.Address, int32Value, address.Power);
 
                         case TypeCode.Single:
                             float floatValue = float.Parse(value);
-                            return config.PLCInstance.WriteFloat(address.Address, floatValue);
+                            return config.PLCInstance.WriteFloat(address.Address, floatValue, address.Power);
 
                         case TypeCode.Double:
                             double doubleValue = double.Parse(value);
-                            return config.PLCInstance.WriteDouble(address.Address, address.Power, doubleValue);
+                            return config.PLCInstance.WriteDouble(address.Address,  doubleValue, address.Power);
 
                         case TypeCode.String:
                             return config.PLCInstance.WriteString(address.Address, value);

@@ -104,6 +104,7 @@ namespace CosmxMESClient
         {
             if (_triggerDependencies.TryGetValue(triggerKey, out var dependents))
             {
+                //config.PLCInstance.GroupContinuousAddresses(dependents.Where(d => d.IsEnabled))
                 foreach (var dependent in dependents.Where(d => d.IsEnabled))
                 {
                     await ManualReadScanAddressAsync(config, dependent);
@@ -179,8 +180,11 @@ namespace CosmxMESClient
             }
             return false;
         }
+        /**************************************增加动态分组******************************************/
         private async Task<object> ReadAddressByType(PLCConnectionConfig config, PLCAddressConfig address)
         {
+            
+
             return await Task.Run<object>(() =>
             {
                 try
@@ -194,22 +198,22 @@ namespace CosmxMESClient
                             break;
                         case TypeCode.Int16:
                             int intValue = 0;
-                            if (config.PLCInstance.ReadRegister(address.Address, ref intValue))
+                            if (config.PLCInstance.ReadRegister(address.Address, ref intValue, address.Power))
                                 return intValue;
                             break;
                         case TypeCode.Int32:
                             int int32Value = 0;
-                            if (config.PLCInstance.ReadInt32(address.Address, ref int32Value))
+                            if (config.PLCInstance.ReadInt32(address.Address, ref int32Value, address.Power))
                                 return int32Value;
                             break;
                         case TypeCode.Single:
                             float floatValue = 0;
-                            if (config.PLCInstance.ReadFloat(address.Address, ref floatValue))
+                            if (config.PLCInstance.ReadFloat(address.Address, ref floatValue, address.Power))
                                 return floatValue;
                             break;
                         case TypeCode.Double:
                             double doubleValue = 0;
-                            if (config.PLCInstance.ReadDouble(address.Address, address.Power, ref doubleValue))
+                            if (config.PLCInstance.ReadDouble(address.Address, ref doubleValue, address.Power))
                                 return doubleValue;
                             break;
                         case TypeCode.String:
@@ -570,7 +574,7 @@ namespace CosmxMESClient
                             return config.PLCInstance.WriteFloat(address.Address, floatValue);
                         case TypeCode.Double:
                             double doubleValue = 0;
-                            return config.PLCInstance.WriteDouble(address.Address, 1, doubleValue); // 默认power=1
+                            return config.PLCInstance.WriteDouble(address.Address,  doubleValue,1); // 默认power=1
                         case TypeCode.String:
                             string stringValue = "";
                             return config.PLCInstance.WriteString(address.Address, stringValue);

@@ -57,8 +57,7 @@ namespace CosmxMESClient
 
             // 重要修改：延迟初始化PLC管理器
             _ = InitializePLCManagerAsync();
-            // 加载上传数据配置
-            _ = UploadDataConfigManager.GetConfig();
+           
         }
         private void InitializePLCManager()
         {
@@ -146,6 +145,9 @@ namespace CosmxMESClient
 
                 UpdateStatus("系统就绪", true);
                 AppendLog("PLC管理器初始化完成");
+
+                // 加载上传数据配置
+                _ = UploadDataConfigManager.GetConfig();
             }
             catch (Exception ex)
             {
@@ -435,6 +437,11 @@ namespace CosmxMESClient
         /// <param name="e"></param>
         private void PLCConnectionStatusChanged(object sender, ConnectionStatusChangedEventArgs e)
         {
+            if (this.InvokeRequired)
+            {
+                this.BeginInvoke(new Action<object, ConnectionStatusChangedEventArgs>(PLCConnectionStatusChanged), sender, e);
+                return;
+            }
             // 如果有任意一个PLC连接成功
             bool anyPLCConnect = GlobalVariables.PLCConnections.Any(t => t.IsConnected);
             if (anyPLCConnect)
@@ -1594,6 +1601,7 @@ namespace CosmxMESClient
         #region 控件使能
         private void EnableControl(bool isEnable)
         {
+            
             plcConfigItem.Enabled = isEnable;
             uploadDataItem.Enabled = isEnable;
         }
@@ -1643,7 +1651,7 @@ namespace CosmxMESClient
             {
                 item.ParameterValue = value.Value.ToString();
 
-                AppendLog("参数名：" + item.ParameterName);
+                AppendLog("参数名：" + item.ParameterName+item.PLCScanAddressKey);
                 AppendLog("参数值：" + item.ParameterValue);
 
             }

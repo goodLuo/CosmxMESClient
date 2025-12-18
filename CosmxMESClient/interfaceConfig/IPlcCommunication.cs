@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using static CosmxMESClient.Communication.CDeltaModbusTcp;
 
 namespace CosmxMESClient.interfaceConfig {
     public class HeartbeatStatus {
@@ -21,6 +22,7 @@ namespace CosmxMESClient.interfaceConfig {
             }
         public DateTime LastCheckTime { get; set; } = DateTime.Now;
         }
+
     // 自动读取配置类
     public class AutoReadConfig {
         public string Key {
@@ -48,6 +50,7 @@ namespace CosmxMESClient.interfaceConfig {
         public int ReadIntervalMs { get; set; } = 1000; // 默认1秒读取一次
         public bool IsBulkRead { get; set; } = true; // 是否使用批量读取
         }
+
     public enum ByteOrderEnum {
         BigEndian,           // 大端序 (ABCD)
         LittleEndian,        // 小端序 (DCBA)
@@ -185,245 +188,68 @@ namespace CosmxMESClient.interfaceConfig {
         StringByteOrderEnum StringByteOrder {
             get; set;
             }
-        #region 基础数据读写
-        /// <summary>
-        /// 读取单个寄存器值（16位整型）
-        /// </summary>
-        /// <param name="address">寄存器地址（如"D100"）</param>
-        /// <param name="value">读取到的值</param>
-        /// <returns>成功返回true，失败返回false</returns>
-        bool ReadRegister( string address,ref int value );
-        bool WriteRegister( string address,int value );
-        bool ReadInt32( string address,ref int value );
-        bool WriteInt32( string address,int value );
-        /// <summary>
-        /// float类型读取
-        /// </summary>
-        /// <param name="address"></param>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        bool ReadFloat( string address,ref float value );
-        /// <summary>
-        /// float类型写入
-        /// </summary>
-        /// <param name="address"></param>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        bool WriteFloat( string address,float value );
+        #region 基础数据读写（添加power参数）
+        bool ReadRegister( string address,ref int value,int power = 1 );
+        bool WriteRegister( string address,int value,int power = 1 );
 
-        /// <summary>
-        /// 读取32位数据（通常占用2个寄存器）
-        /// </summary>
-        /// <param name="address">起始地址</param>
-        /// <param name="power">缩放系数（如10000表示精度为0.0001）</param>
-        /// <param name="value">读取到的值</param>
-        /// <returns>成功返回true，失败返回false</returns>
-        bool ReadDouble( string address,int power,ref double value );
+        bool ReadInt32( string address,ref int value,int power = 1 );
+        bool WriteInt32( string address,int value,int power = 1 );
 
-        /// <summary>
-        /// 写入32位数据（通常占用2个寄存器）
-        /// </summary>
-        /// <param name="address">起始地址</param>
-        /// <param name="power">缩放系数</param>
-        /// <param name="value">要写入的值</param>
-        /// <returns>成功返回true，失败返回false</returns>
-        bool WriteDouble( string address,int power,double value );
-        /// <summary>
-        /// 位读
-        /// </summary>
-        /// <param name="address"></param>
-        /// <param name="value"></param>
-        /// <returns></returns>
+        bool ReadFloat( string address,ref float value,int power = 1 );
+        bool WriteFloat( string address,float value,int power = 1 );
+
+        bool ReadDouble( string address,ref double value,int power = 1 );
+        bool WriteDouble( string address,double value,int power = 1 );
+
+        // bool类型不需要power参数
         bool ReadRegisterBit( string address,ref bool value );
-        /// <summary>
-        /// 位写
-        /// </summary>
-        /// <param name="address"></param>
-        /// <param name="value"></param>
-        /// <returns></returns>
         bool WriteRegisterBit( string address,bool value );
         #endregion
 
-        #region 批量数据操作
-        /// <summary>
-        /// 读取连续地址INT
-        /// </summary>
-        /// <param name="address"></param>
-        /// <param name="length"></param>
-        /// <param name="values"></param>
-        /// <returns></returns>
-        bool ReadContinuousInt( string address,int length,ref int[] values );
-        bool BatchWriteFloat( List<string> addresses,float[] values );
-        bool BatchReadFloat( List<string> addresses,ref float[] values );
-        bool BatchReadInt32( List<string> addresses,ref int[] values );
-        bool BatchWriteInt32( List<string> addresses,int[] values );
-        /// <summary>
-        /// 批量读取多个int值
-        /// </summary>
-        bool BatchReadInt( List<string> addresses,ref int[] values );
+        #region 批量数据操作（添加power参数）
+        bool BatchWriteFloat( List<string> addresses,float[] values,int power = 1 );
+        bool BatchReadFloat( List<string> addresses,ref float[] values,int power = 1 );
 
-        /// <summary>
-        /// 批量写入多个int值
-        /// </summary>
-        bool BatchWriteInt( List<string> addresses,int[] values );
+        bool BatchReadInt32( List<string> addresses,ref int[] values,int power = 1 );
+        bool BatchWriteInt32( List<string> addresses,int[] values,int power = 1 );
 
-        /// <summary>
-        /// 批量读取多个double值
-        /// </summary>
-        bool BatchReadDouble( List<string> addresses,int power,ref double[] values );
+        bool BatchReadInt( List<string> addresses,ref int[] values,int power = 1 );
+        bool BatchWriteInt( List<string> addresses,int[] values,int power = 1 );
 
-        /// <summary>
-        /// 批量写入多个double值
-        /// </summary>
-        bool BatchWriteDouble( List<string> addresses,int power,double[] values );
+        bool BatchReadDouble( List<string> addresses,ref double[] values,int power = 1 );
+        bool BatchWriteDouble( List<string> addresses,double[] values,int power = 1 );
 
-        /// <summary>
-        /// 批量读取多个字符串值
-        /// </summary>
+        // 字符串和bool类型不需要power参数
         bool BatchReadString( List<string> addresses,int maxStringLength,ref string[] texts );
-
-        /// <summary>
-        /// 批量写入多个字符串值
-        /// </summary>
         bool BatchWriteString( List<string> addresses,string[] texts,int maxStringLength );
-        /// <summary>
-        /// 批量读位
-        /// </summary>
-        /// <param name="addresses"></param>
-        /// <param name="values"></param>
-        /// <returns></returns>
+
         bool BatchReadRegisterBits( List<string> addresses,ref bool[] values );
-        /// <summary>
-        /// 批量写位
-        /// </summary>
-        /// <param name="addresses"></param>
-        /// <param name="values"></param>
-        /// <returns></returns>
         bool BatchWriteRegisterBits( List<string> addresses,bool[] values );
         #endregion
 
         #region 自动读取操作
-        /// <summary>
-        /// 添加或更新自动读取配置（单个地址）
-        /// 如果指定的键已存在，则更新对应的配置；如果不存在，则创建新的自动读取配置
-        /// </summary>
-        /// <param name="key">自动读取配置的唯一标识符，用于后续管理和引用</param>
-        /// <param name="address">要读取的PLC设备地址，例如："D100"、"M200"等</param>
-        /// <param name="dataType">要读取的数据类型，例如：typeof(int)、typeof(float)等</param>
-        /// <param name="readIntervalMs">读取间隔时间（毫秒），默认值为1000毫秒（1秒）</param>
-        /// <param name="power">数据转换的幂次方系数，用于数据缩放，默认值为1（不缩放）</param>
-        /// <param name="length">要读取的数据长度（对于数组类型），默认值为1（单个值）</param>
-        /// <param name="maxLength">最大数据长度限制，默认值为10</param>
-        /// <param name="isBulkRead">是否启用批量读取模式，启用后可优化多个地址的读取性能，默认值为true</param>
-        /// <returns>如果成功添加或更新配置返回true，否则返回false</returns>
         bool AddOrUpdateAutoRead( string key,string address,TypeCode dataType,int readIntervalMs = 1000,
-                                 int power = 1,int length = 1,int maxLength = 20,bool isBulkRead = true );
-        /// <summary>
-        /// 添加或更新自动读取配置（地址列表）
-        /// 如果指定的键已存在，则更新对应的配置；如果不存在，则创建新的自动读取配置
-        /// 此重载方法允许一次性配置多个地址的自动读取
-        /// </summary>
-        /// <param name="key">自动读取配置的唯一标识符，用于后续管理和引用</param>
-        /// <param name="addresses">要读取的PLC设备地址列表，例如：["D100", "D101", "M200"]</param>
-        /// <param name="dataType">要读取的数据类型，例如：typeof(int)、typeof(float)等</param>
-        /// <param name="readIntervalMs">读取间隔时间（毫秒），默认值为1000毫秒（1秒）</param>
-        /// <param name="power">数据转换的幂次方系数，用于数据缩放，默认值为1（不缩放）</param>
-        /// <param name="length">要读取的数据长度（对于数组类型），默认值为1（单个值）</param>
-        /// <param name="maxLength">批最大数据长度限制，默认值为10</param>
-        /// <param name="isBulkRead">是否启用批量读取模式，启用后可优化多个地址的读取性能，默认值为true</param>
-        /// <returns>如果成功添加或更新配置返回true，否则返回false</returns>
+                                int power = 1,int length = 1,int maxLength = 20,bool isBulkRead = true );
+
         bool AddOrUpdateAutoRead( string key,List<string> addresses,TypeCode dataType,int readIntervalMs = 1000,
-                                 int power = 1,int length = 1,int maxLength = 10,bool isBulkRead = true );
-        /// <summary>
-        /// 移除自动读取配置
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
+                                int power = 1,int length = 1,int maxLength = 10,bool isBulkRead = true );
+
         bool RemoveAutoRead( string key );
-
         bool RemoveAutoReadAll( );
-
-        /// <summary>
-        /// 获取所有自动读取配置的键
-        /// </summary>
-        /// <returns></returns>
         List<string> GetAutoReadKeys( );
-
-        /// <summary>
-        /// 获取特定配置
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
         AutoReadConfig GetAutoReadConfig( string key );
-        /// <summary>
-        /// 启动自动读取
-        /// </summary>
         void StartAutoRead( );
-
-        /// <summary>
-        /// 停止自动读取
-        /// </summary>
         void StopAutoRead( );
-
-        /// <summary>
-        /// 立即执行一次自动读取（手动触发）
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
         bool ExecuteAutoReadNow( string key );
         #endregion
-
-        #region 位操作
-        /// <summary>
-        /// 读取单个位（线圈）状态
-        /// </summary>
-        /// <param name="address">位地址（如"Y0"）</param>
-        /// <param name="value">读取到的状态</param>
-        /// <returns>成功返回true，失败返回false</returns>
+        #region 位操作（不需要power参数）
         bool ReadCoil( string address,ref bool value );
-
-        /// <summary>
-        /// 写入单个位（线圈）状态
-        /// </summary>
-        /// <param name="address">位地址</param>
-        /// <param name="value">要写入的状态</param>
-        /// <returns>成功返回true，失败返回false</returns>
         bool WriteCoil( string address,bool value );
-
-        /// <summary>
-        /// 读取多个位（线圈）状态
-        /// </summary>
-        /// <param name="address">起始地址</param>
-        /// <param name="length">要读取的数量</param>
-        /// <param name="values">读取到的状态数组</param>
-        /// <returns>成功返回true，失败返回false</returns>
         bool ReadCoils( string address,int length,ref bool[] values );
-
-        /// <summary>
-        /// 写入多个位（线圈）状态
-        /// </summary>
-        /// <param name="address">起始地址</param>
-        /// <param name="values">要写入的状态数组</param>
-        /// <returns>成功返回true，失败返回false</returns>
         bool WriteCoils( string address,bool[] values );
         #endregion
-
-        #region 字符串操作
-        /// <summary>
-        /// 读取字符串（从多个寄存器）
-        /// </summary>
-        /// <param name="address">起始地址</param>
-        /// <param name="text">读取到的字符串</param>
-        /// <param name="maxLength">最大长度（字符数）</param>
-        /// <returns>成功返回true，失败返回false</returns>
+        #region 字符串操作（不需要power参数）
         bool ReadString( string address,ref string text,int maxLength = 20 );
-
-        /// <summary>
-        /// 写入字符串（到多个寄存器）
-        /// </summary>
-        /// <param name="address">起始地址</param>
-        /// <param name="text">要写入的字符串</param>
-        /// <returns>成功返回true，失败返回false</returns>
         bool WriteString( string address,string text );
         #endregion
 
@@ -464,6 +290,11 @@ namespace CosmxMESClient.interfaceConfig {
         string LastError {
             get;
             }
+
         #endregion
-        }
+
+        #region 动态分组
+        List<AddressGroup> GroupContinuousAddresses(List<string> addresses, TypeCode dataType);
+        #endregion
     }
+}
