@@ -112,7 +112,7 @@
             this.tabControl1.Controls.Add(this.tabSettings);
             this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControl1.Location = new System.Drawing.Point(2, 2);
-            this.tabControl1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.tabControl1.Margin = new System.Windows.Forms.Padding(2);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
             this.tabControl1.Size = new System.Drawing.Size(582, 169);
@@ -122,9 +122,9 @@
             // 
             this.tabPublic.Controls.Add(this.grpPublic);
             this.tabPublic.Location = new System.Drawing.Point(4, 22);
-            this.tabPublic.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.tabPublic.Margin = new System.Windows.Forms.Padding(2);
             this.tabPublic.Name = "tabPublic";
-            this.tabPublic.Padding = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.tabPublic.Padding = new System.Windows.Forms.Padding(2);
             this.tabPublic.Size = new System.Drawing.Size(574, 143);
             this.tabPublic.TabIndex = 0;
             this.tabPublic.Text = "公共接口";
@@ -138,9 +138,9 @@
             this.grpPublic.Controls.Add(this.lblMachineNo);
             this.grpPublic.Dock = System.Windows.Forms.DockStyle.Fill;
             this.grpPublic.Location = new System.Drawing.Point(2, 2);
-            this.grpPublic.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.grpPublic.Margin = new System.Windows.Forms.Padding(2);
             this.grpPublic.Name = "grpPublic";
-            this.grpPublic.Padding = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.grpPublic.Padding = new System.Windows.Forms.Padding(2);
             this.grpPublic.Size = new System.Drawing.Size(570, 139);
             this.grpPublic.TabIndex = 0;
             this.grpPublic.TabStop = false;
@@ -151,7 +151,7 @@
             this.lstProductCodes.FormattingEnabled = true;
             this.lstProductCodes.ItemHeight = 12;
             this.lstProductCodes.Location = new System.Drawing.Point(13, 40);
-            this.lstProductCodes.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.lstProductCodes.Margin = new System.Windows.Forms.Padding(2);
             this.lstProductCodes.Name = "lstProductCodes";
             this.lstProductCodes.Size = new System.Drawing.Size(303, 100);
             this.lstProductCodes.TabIndex = 5;
@@ -160,7 +160,7 @@
             // btnGetProductCode
             // 
             this.btnGetProductCode.Location = new System.Drawing.Point(211, 18);
-            this.btnGetProductCode.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnGetProductCode.Margin = new System.Windows.Forms.Padding(2);
             this.btnGetProductCode.Name = "btnGetProductCode";
             this.btnGetProductCode.Size = new System.Drawing.Size(105, 19);
             this.btnGetProductCode.TabIndex = 4;
@@ -171,7 +171,7 @@
             // txtMachineNo
             // 
             this.txtMachineNo.Location = new System.Drawing.Point(73, 18);
-            this.txtMachineNo.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.txtMachineNo.Margin = new System.Windows.Forms.Padding(2);
             this.txtMachineNo.Name = "txtMachineNo";
             this.txtMachineNo.Size = new System.Drawing.Size(135, 21);
             this.txtMachineNo.TabIndex = 3;
@@ -191,10 +191,10 @@
             // 
             this.tabBaking.Controls.Add(this.grpBaking);
             this.tabBaking.Location = new System.Drawing.Point(4, 22);
-            this.tabBaking.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.tabBaking.Margin = new System.Windows.Forms.Padding(2);
             this.tabBaking.Name = "tabBaking";
-            this.tabBaking.Padding = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.tabBaking.Size = new System.Drawing.Size(573, 143);
+            this.tabBaking.Padding = new System.Windows.Forms.Padding(2);
+            this.tabBaking.Size = new System.Drawing.Size(574, 143);
             this.tabBaking.TabIndex = 1;
             this.tabBaking.Text = "烘烤工序";
             this.tabBaking.UseVisualStyleBackColor = true;
@@ -210,10 +210,10 @@
             this.grpBaking.Controls.Add(this.lblBakeCellName);
             this.grpBaking.Dock = System.Windows.Forms.DockStyle.Fill;
             this.grpBaking.Location = new System.Drawing.Point(2, 2);
-            this.grpBaking.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.grpBaking.Margin = new System.Windows.Forms.Padding(2);
             this.grpBaking.Name = "grpBaking";
-            this.grpBaking.Padding = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.grpBaking.Size = new System.Drawing.Size(569, 139);
+            this.grpBaking.Padding = new System.Windows.Forms.Padding(2);
+            this.grpBaking.Size = new System.Drawing.Size(570, 139);
             this.grpBaking.TabIndex = 0;
             this.grpBaking.TabStop = false;
             this.grpBaking.Text = "烘烤工序操作";
@@ -222,7 +222,7 @@
             // 
             this.btnGetWaterInfo.BackColor = System.Drawing.Color.LightGreen;
             this.btnGetWaterInfo.Location = new System.Drawing.Point(207, 73);
-            this.btnGetWaterInfo.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnGetWaterInfo.Margin = new System.Windows.Forms.Padding(2);
             this.btnGetWaterInfo.Name = "btnGetWaterInfo";
             this.btnGetWaterInfo.Size = new System.Drawing.Size(90, 20);
             this.btnGetWaterInfo.TabIndex = 6;
@@ -234,7 +234,7 @@
             // 
             this.btnUploadBakeData.BackColor = System.Drawing.Color.LightSalmon;
             this.btnUploadBakeData.Location = new System.Drawing.Point(109, 73);
-            this.btnUploadBakeData.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnUploadBakeData.Margin = new System.Windows.Forms.Padding(2);
             this.btnUploadBakeData.Name = "btnUploadBakeData";
             this.btnUploadBakeData.Size = new System.Drawing.Size(87, 20);
             this.btnUploadBakeData.TabIndex = 5;
@@ -246,7 +246,7 @@
             // 
             this.btnCheckCell.BackColor = System.Drawing.Color.LightBlue;
             this.btnCheckCell.Location = new System.Drawing.Point(33, 73);
-            this.btnCheckCell.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnCheckCell.Margin = new System.Windows.Forms.Padding(2);
             this.btnCheckCell.Name = "btnCheckCell";
             this.btnCheckCell.Size = new System.Drawing.Size(67, 20);
             this.btnCheckCell.TabIndex = 4;
@@ -257,7 +257,7 @@
             // txtBakeProjCode
             // 
             this.txtBakeProjCode.Location = new System.Drawing.Point(77, 45);
-            this.txtBakeProjCode.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.txtBakeProjCode.Margin = new System.Windows.Forms.Padding(2);
             this.txtBakeProjCode.Name = "txtBakeProjCode";
             this.txtBakeProjCode.Size = new System.Drawing.Size(168, 21);
             this.txtBakeProjCode.TabIndex = 3;
@@ -275,7 +275,7 @@
             // txtBakeCellName
             // 
             this.txtBakeCellName.Location = new System.Drawing.Point(77, 18);
-            this.txtBakeCellName.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.txtBakeCellName.Margin = new System.Windows.Forms.Padding(2);
             this.txtBakeCellName.Name = "txtBakeCellName";
             this.txtBakeCellName.Size = new System.Drawing.Size(168, 21);
             this.txtBakeCellName.TabIndex = 1;
@@ -295,9 +295,9 @@
             // 
             this.tabInjection.Controls.Add(this.grpInjection);
             this.tabInjection.Location = new System.Drawing.Point(4, 22);
-            this.tabInjection.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.tabInjection.Margin = new System.Windows.Forms.Padding(2);
             this.tabInjection.Name = "tabInjection";
-            this.tabInjection.Size = new System.Drawing.Size(573, 143);
+            this.tabInjection.Size = new System.Drawing.Size(574, 143);
             this.tabInjection.TabIndex = 2;
             this.tabInjection.Text = "注液工序";
             this.tabInjection.UseVisualStyleBackColor = true;
@@ -317,10 +317,10 @@
             this.grpInjection.Controls.Add(this.lblElectrolyte);
             this.grpInjection.Dock = System.Windows.Forms.DockStyle.Fill;
             this.grpInjection.Location = new System.Drawing.Point(0, 0);
-            this.grpInjection.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.grpInjection.Margin = new System.Windows.Forms.Padding(2);
             this.grpInjection.Name = "grpInjection";
-            this.grpInjection.Padding = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.grpInjection.Size = new System.Drawing.Size(573, 143);
+            this.grpInjection.Padding = new System.Windows.Forms.Padding(2);
+            this.grpInjection.Size = new System.Drawing.Size(574, 143);
             this.grpInjection.TabIndex = 0;
             this.grpInjection.TabStop = false;
             this.grpInjection.Text = "注液工序操作";
@@ -329,7 +329,7 @@
             // 
             this.btnCheckCondition.BackColor = System.Drawing.Color.LightGreen;
             this.btnCheckCondition.Location = new System.Drawing.Point(203, 125);
-            this.btnCheckCondition.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnCheckCondition.Margin = new System.Windows.Forms.Padding(2);
             this.btnCheckCondition.Name = "btnCheckCondition";
             this.btnCheckCondition.Size = new System.Drawing.Size(92, 20);
             this.btnCheckCondition.TabIndex = 10;
@@ -341,7 +341,7 @@
             // 
             this.btnGetIJPara.BackColor = System.Drawing.Color.LightYellow;
             this.btnGetIJPara.Location = new System.Drawing.Point(98, 125);
-            this.btnGetIJPara.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnGetIJPara.Margin = new System.Windows.Forms.Padding(2);
             this.btnGetIJPara.Name = "btnGetIJPara";
             this.btnGetIJPara.Size = new System.Drawing.Size(101, 20);
             this.btnGetIJPara.TabIndex = 9;
@@ -353,7 +353,7 @@
             // 
             this.btnElectCheck.BackColor = System.Drawing.Color.LightBlue;
             this.btnElectCheck.Location = new System.Drawing.Point(14, 125);
-            this.btnElectCheck.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnElectCheck.Margin = new System.Windows.Forms.Padding(2);
             this.btnElectCheck.Name = "btnElectCheck";
             this.btnElectCheck.Size = new System.Drawing.Size(80, 20);
             this.btnElectCheck.TabIndex = 8;
@@ -371,7 +371,7 @@
             "一次注液",
             "二次注液"});
             this.cmbIJType.Location = new System.Drawing.Point(89, 94);
-            this.cmbIJType.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.cmbIJType.Margin = new System.Windows.Forms.Padding(2);
             this.cmbIJType.Name = "cmbIJType";
             this.cmbIJType.Size = new System.Drawing.Size(168, 20);
             this.cmbIJType.TabIndex = 7;
@@ -389,7 +389,7 @@
             // txtIJProjCode
             // 
             this.txtIJProjCode.Location = new System.Drawing.Point(89, 63);
-            this.txtIJProjCode.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.txtIJProjCode.Margin = new System.Windows.Forms.Padding(2);
             this.txtIJProjCode.Name = "txtIJProjCode";
             this.txtIJProjCode.Size = new System.Drawing.Size(168, 21);
             this.txtIJProjCode.TabIndex = 5;
@@ -407,7 +407,7 @@
             // txtIJCellName
             // 
             this.txtIJCellName.Location = new System.Drawing.Point(89, 41);
-            this.txtIJCellName.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.txtIJCellName.Margin = new System.Windows.Forms.Padding(2);
             this.txtIJCellName.Name = "txtIJCellName";
             this.txtIJCellName.Size = new System.Drawing.Size(168, 21);
             this.txtIJCellName.TabIndex = 3;
@@ -425,7 +425,7 @@
             // txtElectrolyte
             // 
             this.txtElectrolyte.Location = new System.Drawing.Point(89, 19);
-            this.txtElectrolyte.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.txtElectrolyte.Margin = new System.Windows.Forms.Padding(2);
             this.txtElectrolyte.Name = "txtElectrolyte";
             this.txtElectrolyte.Size = new System.Drawing.Size(168, 21);
             this.txtElectrolyte.TabIndex = 1;
@@ -445,9 +445,9 @@
             // 
             this.tabSettings.Controls.Add(this.grpSettings);
             this.tabSettings.Location = new System.Drawing.Point(4, 22);
-            this.tabSettings.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.tabSettings.Margin = new System.Windows.Forms.Padding(2);
             this.tabSettings.Name = "tabSettings";
-            this.tabSettings.Size = new System.Drawing.Size(573, 143);
+            this.tabSettings.Size = new System.Drawing.Size(574, 143);
             this.tabSettings.TabIndex = 3;
             this.tabSettings.Text = "设置";
             this.tabSettings.UseVisualStyleBackColor = true;
@@ -462,10 +462,10 @@
             this.grpSettings.Controls.Add(this.lblBaseUrl);
             this.grpSettings.Dock = System.Windows.Forms.DockStyle.Fill;
             this.grpSettings.Location = new System.Drawing.Point(0, 0);
-            this.grpSettings.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.grpSettings.Margin = new System.Windows.Forms.Padding(2);
             this.grpSettings.Name = "grpSettings";
-            this.grpSettings.Padding = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.grpSettings.Size = new System.Drawing.Size(573, 143);
+            this.grpSettings.Padding = new System.Windows.Forms.Padding(2);
+            this.grpSettings.Size = new System.Drawing.Size(574, 143);
             this.grpSettings.TabIndex = 0;
             this.grpSettings.TabStop = false;
             this.grpSettings.Text = "系统配置";
@@ -474,7 +474,7 @@
             // 
             this.btnTestConnection.BackColor = System.Drawing.Color.LightGreen;
             this.btnTestConnection.Location = new System.Drawing.Point(117, 88);
-            this.btnTestConnection.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnTestConnection.Margin = new System.Windows.Forms.Padding(2);
             this.btnTestConnection.Name = "btnTestConnection";
             this.btnTestConnection.Size = new System.Drawing.Size(66, 20);
             this.btnTestConnection.TabIndex = 5;
@@ -486,7 +486,7 @@
             // 
             this.btnSaveSettings.BackColor = System.Drawing.Color.LightBlue;
             this.btnSaveSettings.Location = new System.Drawing.Point(25, 88);
-            this.btnSaveSettings.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnSaveSettings.Margin = new System.Windows.Forms.Padding(2);
             this.btnSaveSettings.Name = "btnSaveSettings";
             this.btnSaveSettings.Size = new System.Drawing.Size(72, 20);
             this.btnSaveSettings.TabIndex = 4;
@@ -496,7 +496,7 @@
             // txtTimeout
             // 
             this.txtTimeout.Location = new System.Drawing.Point(101, 41);
-            this.txtTimeout.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.txtTimeout.Margin = new System.Windows.Forms.Padding(2);
             this.txtTimeout.Name = "txtTimeout";
             this.txtTimeout.Size = new System.Drawing.Size(55, 21);
             this.txtTimeout.TabIndex = 3;
@@ -514,7 +514,7 @@
             // txtBaseUrl
             // 
             this.txtBaseUrl.Location = new System.Drawing.Point(101, 18);
-            this.txtBaseUrl.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.txtBaseUrl.Margin = new System.Windows.Forms.Padding(2);
             this.txtBaseUrl.Name = "txtBaseUrl";
             this.txtBaseUrl.Size = new System.Drawing.Size(188, 21);
             this.txtBaseUrl.TabIndex = 1;
@@ -535,9 +535,9 @@
             this.grpCardCheck.Controls.Add(this.tableLayoutPanel4);
             this.grpCardCheck.Dock = System.Windows.Forms.DockStyle.Fill;
             this.grpCardCheck.Location = new System.Drawing.Point(2, 175);
-            this.grpCardCheck.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.grpCardCheck.Margin = new System.Windows.Forms.Padding(2);
             this.grpCardCheck.Name = "grpCardCheck";
-            this.grpCardCheck.Padding = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.grpCardCheck.Padding = new System.Windows.Forms.Padding(2);
             this.grpCardCheck.Size = new System.Drawing.Size(582, 168);
             this.grpCardCheck.TabIndex = 1;
             this.grpCardCheck.TabStop = false;
@@ -559,7 +559,7 @@
             this.tableLayoutPanel4.Controls.Add(this.cmbProcName, 3, 0);
             this.tableLayoutPanel4.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel4.Location = new System.Drawing.Point(2, 16);
-            this.tableLayoutPanel4.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.tableLayoutPanel4.Margin = new System.Windows.Forms.Padding(2);
             this.tableLayoutPanel4.Name = "tableLayoutPanel4";
             this.tableLayoutPanel4.RowCount = 2;
             this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 27F));
@@ -572,7 +572,7 @@
             this.lblCardNo.AutoSize = true;
             this.lblCardNo.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblCardNo.Location = new System.Drawing.Point(2, 2);
-            this.lblCardNo.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.lblCardNo.Margin = new System.Windows.Forms.Padding(2);
             this.lblCardNo.Name = "lblCardNo";
             this.lblCardNo.Size = new System.Drawing.Size(36, 23);
             this.lblCardNo.TabIndex = 0;
@@ -583,7 +583,7 @@
             this.tableLayoutPanel4.SetColumnSpan(this.txtResult, 5);
             this.txtResult.Dock = System.Windows.Forms.DockStyle.Fill;
             this.txtResult.Location = new System.Drawing.Point(2, 29);
-            this.txtResult.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.txtResult.Margin = new System.Windows.Forms.Padding(2);
             this.txtResult.Multiline = true;
             this.txtResult.Name = "txtResult";
             this.txtResult.ReadOnly = true;
@@ -595,7 +595,7 @@
             // 
             this.txtCardNo.Dock = System.Windows.Forms.DockStyle.Fill;
             this.txtCardNo.Location = new System.Drawing.Point(42, 2);
-            this.txtCardNo.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.txtCardNo.Margin = new System.Windows.Forms.Padding(2);
             this.txtCardNo.Name = "txtCardNo";
             this.txtCardNo.Size = new System.Drawing.Size(129, 21);
             this.txtCardNo.TabIndex = 1;
@@ -606,7 +606,7 @@
             this.btnCardCheck.BackColor = System.Drawing.Color.LightGreen;
             this.btnCardCheck.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnCardCheck.Location = new System.Drawing.Point(348, 2);
-            this.btnCardCheck.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnCardCheck.Margin = new System.Windows.Forms.Padding(2);
             this.btnCardCheck.Name = "btnCardCheck";
             this.btnCardCheck.Size = new System.Drawing.Size(228, 23);
             this.btnCardCheck.TabIndex = 4;
@@ -652,7 +652,7 @@
             "FX",
             "BZ"});
             this.cmbProcName.Location = new System.Drawing.Point(215, 2);
-            this.cmbProcName.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.cmbProcName.Margin = new System.Windows.Forms.Padding(2);
             this.cmbProcName.Name = "cmbProcName";
             this.cmbProcName.Size = new System.Drawing.Size(129, 20);
             this.cmbProcName.TabIndex = 3;
@@ -679,7 +679,7 @@
             this.tableLayoutPanel2.Controls.Add(this.tableLayoutPanel1, 0, 4);
             this.tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel2.Location = new System.Drawing.Point(0, 0);
-            this.tableLayoutPanel2.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.tableLayoutPanel2.Margin = new System.Windows.Forms.Padding(2);
             this.tableLayoutPanel2.Name = "tableLayoutPanel2";
             this.tableLayoutPanel2.RowCount = 5;
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 173F));
@@ -695,9 +695,9 @@
             this.grpLog.Controls.Add(this.txtLog);
             this.grpLog.Dock = System.Windows.Forms.DockStyle.Fill;
             this.grpLog.Location = new System.Drawing.Point(2, 377);
-            this.grpLog.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.grpLog.Margin = new System.Windows.Forms.Padding(2);
             this.grpLog.Name = "grpLog";
-            this.grpLog.Padding = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.grpLog.Padding = new System.Windows.Forms.Padding(2);
             this.grpLog.Size = new System.Drawing.Size(582, 168);
             this.grpLog.TabIndex = 7;
             this.grpLog.TabStop = false;
@@ -710,7 +710,7 @@
             this.txtLog.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtLog.ForeColor = System.Drawing.Color.Black;
             this.txtLog.Location = new System.Drawing.Point(2, 16);
-            this.txtLog.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.txtLog.Margin = new System.Windows.Forms.Padding(2);
             this.txtLog.Name = "txtLog";
             this.txtLog.ReadOnly = true;
             this.txtLog.Size = new System.Drawing.Size(578, 150);
@@ -726,7 +726,7 @@
             this.tableLayoutPanel1.Controls.Add(this.btnClearLog, 0, 0);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Left;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(2, 549);
-            this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(2);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.RowCount = 1;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
@@ -737,7 +737,7 @@
             // 
             this.btnSaveLog.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnSaveLog.Location = new System.Drawing.Point(117, 2);
-            this.btnSaveLog.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnSaveLog.Margin = new System.Windows.Forms.Padding(2);
             this.btnSaveLog.Name = "btnSaveLog";
             this.btnSaveLog.Size = new System.Drawing.Size(111, 23);
             this.btnSaveLog.TabIndex = 11;
@@ -749,7 +749,7 @@
             // 
             this.btnClearLog.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnClearLog.Location = new System.Drawing.Point(2, 2);
-            this.btnClearLog.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnClearLog.Margin = new System.Windows.Forms.Padding(2);
             this.btnClearLog.Name = "btnClearLog";
             this.btnClearLog.Size = new System.Drawing.Size(111, 23);
             this.btnClearLog.TabIndex = 8;
@@ -762,7 +762,7 @@
             this.pnlPLCStatus.Controls.Add(this.tableLayoutPanel3);
             this.pnlPLCStatus.Dock = System.Windows.Forms.DockStyle.Right;
             this.pnlPLCStatus.Location = new System.Drawing.Point(586, 0);
-            this.pnlPLCStatus.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.pnlPLCStatus.Margin = new System.Windows.Forms.Padding(2);
             this.pnlPLCStatus.Name = "pnlPLCStatus";
             this.pnlPLCStatus.Size = new System.Drawing.Size(379, 578);
             this.pnlPLCStatus.TabIndex = 2;
@@ -782,7 +782,7 @@
             this.tableLayoutPanel3.Controls.Add(this.btnStopAutoRead, 3, 1);
             this.tableLayoutPanel3.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel3.Location = new System.Drawing.Point(0, 0);
-            this.tableLayoutPanel3.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.tableLayoutPanel3.Margin = new System.Windows.Forms.Padding(2);
             this.tableLayoutPanel3.Name = "tableLayoutPanel3";
             this.tableLayoutPanel3.RowCount = 2;
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
@@ -803,7 +803,7 @@
             this.lstPLCStatus.GridLines = true;
             this.lstPLCStatus.HideSelection = false;
             this.lstPLCStatus.Location = new System.Drawing.Point(2, 2);
-            this.lstPLCStatus.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.lstPLCStatus.Margin = new System.Windows.Forms.Padding(2);
             this.lstPLCStatus.Name = "lstPLCStatus";
             this.lstPLCStatus.Size = new System.Drawing.Size(375, 547);
             this.lstPLCStatus.TabIndex = 0;
@@ -832,7 +832,7 @@
             // 
             this.btnStartAllConnections.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnStartAllConnections.Location = new System.Drawing.Point(2, 553);
-            this.btnStartAllConnections.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnStartAllConnections.Margin = new System.Windows.Forms.Padding(2);
             this.btnStartAllConnections.Name = "btnStartAllConnections";
             this.btnStartAllConnections.Size = new System.Drawing.Size(76, 23);
             this.btnStartAllConnections.TabIndex = 1;
@@ -844,7 +844,7 @@
             // 
             this.btnStopAllConnections.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnStopAllConnections.Location = new System.Drawing.Point(82, 553);
-            this.btnStopAllConnections.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnStopAllConnections.Margin = new System.Windows.Forms.Padding(2);
             this.btnStopAllConnections.Name = "btnStopAllConnections";
             this.btnStopAllConnections.Size = new System.Drawing.Size(76, 23);
             this.btnStopAllConnections.TabIndex = 2;
@@ -856,7 +856,7 @@
             // 
             this.btnStartAutoRead.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnStartAutoRead.Location = new System.Drawing.Point(162, 553);
-            this.btnStartAutoRead.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnStartAutoRead.Margin = new System.Windows.Forms.Padding(2);
             this.btnStartAutoRead.Name = "btnStartAutoRead";
             this.btnStartAutoRead.Size = new System.Drawing.Size(103, 23);
             this.btnStartAutoRead.TabIndex = 3;
@@ -867,7 +867,7 @@
             // 
             this.btnStopAutoRead.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnStopAutoRead.Location = new System.Drawing.Point(269, 553);
-            this.btnStopAutoRead.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnStopAutoRead.Margin = new System.Windows.Forms.Padding(2);
             this.btnStopAutoRead.Name = "btnStopAutoRead";
             this.btnStopAutoRead.Size = new System.Drawing.Size(103, 23);
             this.btnStopAutoRead.TabIndex = 4;
@@ -881,7 +881,7 @@
             this.ClientSize = new System.Drawing.Size(965, 578);
             this.Controls.Add(this.tableLayoutPanel2);
             this.Controls.Add(this.pnlPLCStatus);
-            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "Form1";
             this.Text = "Form1";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);

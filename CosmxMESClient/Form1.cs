@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static CosmxMESClient.PLCConnectionConfig;
 
 namespace CosmxMESClient
 {
@@ -193,6 +194,13 @@ namespace CosmxMESClient
                     AppendLog($"PLC {config.Name} 已连接，跳过");
                     continue;
                 }
+                // 订阅PLC连接状态改变事件
+                config.ConnectionStatusChanged -= PLCConnectionStatusChanged;
+                config.ConnectionStatusChanged += PLCConnectionStatusChanged;
+
+
+
+
 
                 try
                 {
@@ -419,6 +427,27 @@ namespace CosmxMESClient
                 LoggingService.Error("刷新状态显示失败", ex);
             }
         }
+
+        /// <summary>
+        /// PLC连接状态改变
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void PLCConnectionStatusChanged(object sender, ConnectionStatusChangedEventArgs e)
+        {
+            // 如果有任意一个PLC连接成功
+            bool anyPLCConnect = GlobalVariables.PLCConnections.Any(t => t.IsConnected);
+            if (anyPLCConnect)
+            {
+                // 不允许点击菜单配置
+                EnableControl(false);
+            }
+            else
+            {
+                EnableControl(true);
+            }
+
+        }
         #endregion
         #region 加载PLC配置并启动自动读取
         private void LoadPLCConfigs()
@@ -630,15 +659,14 @@ namespace CosmxMESClient
 
             try
             {
+
                 // 查找对应的PLC配置
-                var config = GlobalVariables.PLCConnections
-            .FirstOrDefault(p => p.PLCInstance.IPEnd.Equals(e.LocalEndPoint));
+                var config = GlobalVariables.PLCConnections.FirstOrDefault(p => p.PLCInstance.IPEnd.Equals(e.LocalEndPoint));
 
                 if (config != null)
                 {
                     // 查找对应的地址配置
-                    var address = config.ScanAddresses
-                .FirstOrDefault(a => a.Address == e.Address);
+                    var address = config.ScanAddresses.FirstOrDefault(a => a.Address == e.Address);
 
                     if (address != null)
                     {
@@ -1237,45 +1265,102 @@ namespace CosmxMESClient
         }
         #endregion
         #region 菜单和工具栏
+        private MenuStrip mainMenu;
+        private ToolStripMenuItem fileMenu;
+        private ToolStripMenuItem plcConfigItem;
+        private ToolStripMenuItem uploadDataItem;
+        private ToolStripMenuItem exitItem;
+        private ToolStripMenuItem toolsMenu;
+        private ToolStripMenuItem clearLogItem;
+        private ToolStripMenuItem helpMenu;
+        private ToolStripMenuItem aboutItem;
+
 
         private void InitializeMenu()
         {
-            // 创建菜单栏
-            MenuStrip mainMenu = new MenuStrip();
+            //// 创建菜单栏
+            //MenuStrip mainMenu = new MenuStrip();
 
-            // 文件菜单
-            ToolStripMenuItem fileMenu = new ToolStripMenuItem("文件(&F)");
+            //// 文件菜单
+            //ToolStripMenuItem fileMenu = new ToolStripMenuItem("文件(&F)");
 
-            // PLC配置菜单项
-            ToolStripMenuItem plcConfigItem = new ToolStripMenuItem("PLC配置(&P)");
-            plcConfigItem.Click += (s, e) => ShowPLCConfigDialog();
-            fileMenu.DropDownItems.Add(plcConfigItem);
+            //// PLC配置菜单项
+            //ToolStripMenuItem plcConfigItem = new ToolStripMenuItem("PLC配置(&P)");
+            //plcConfigItem.Click += (s, e) => ShowPLCConfigDialog();
+            //fileMenu.DropDownItems.Add(plcConfigItem);
 
-            // 数据上传配置菜单
-            ToolStripMenuItem uploadDataItem = new ToolStripMenuItem("数据上传配置(&U)");
-            uploadDataItem.Click += (s, e) => ShowUploadDataConfigDialog();
-            fileMenu.DropDownItems.Add(uploadDataItem);
+            //// 数据上传配置菜单
+            //ToolStripMenuItem uploadDataItem = new ToolStripMenuItem("数据上传配置(&U)");
+            //uploadDataItem.Click += (s, e) => ShowUploadDataConfigDialog();
+            //fileMenu.DropDownItems.Add(uploadDataItem);
 
 
-            ToolStripMenuItem exitItem = new ToolStripMenuItem("退出(&X)");
-            exitItem.Click += (s, e) => Application.Exit();
-            fileMenu.DropDownItems.Add(exitItem);
+            //ToolStripMenuItem exitItem = new ToolStripMenuItem("退出(&X)");
+            //exitItem.Click += (s, e) => Application.Exit();
+            //fileMenu.DropDownItems.Add(exitItem);
 
-            // 工具菜单
-            ToolStripMenuItem toolsMenu = new ToolStripMenuItem("工具(&T)");
-            ToolStripMenuItem clearLogItem = new ToolStripMenuItem("清空日志(&C)");
-            clearLogItem.Click += (s, e) => txtResult.Clear();
-            toolsMenu.DropDownItems.Add(clearLogItem);
+            //// 工具菜单
+            //ToolStripMenuItem toolsMenu = new ToolStripMenuItem("工具(&T)");
+            //ToolStripMenuItem clearLogItem = new ToolStripMenuItem("清空日志(&C)");
+            //clearLogItem.Click += (s, e) => txtResult.Clear();
+            //toolsMenu.DropDownItems.Add(clearLogItem);
 
-            // 帮助菜单
-            ToolStripMenuItem helpMenu = new ToolStripMenuItem("帮助(&H)");
-            ToolStripMenuItem aboutItem = new ToolStripMenuItem("关于(&A)");
-            aboutItem.Click += (s, e) => ShowAboutDialog();
-            helpMenu.DropDownItems.Add(aboutItem);
+            //// 帮助菜单
+            //ToolStripMenuItem helpMenu = new ToolStripMenuItem("帮助(&H)");
+            //ToolStripMenuItem aboutItem = new ToolStripMenuItem("关于(&A)");
+            //aboutItem.Click += (s, e) => ShowAboutDialog();
+            //helpMenu.DropDownItems.Add(aboutItem);
 
-            mainMenu.Items.AddRange(new ToolStripItem[] { fileMenu, toolsMenu, helpMenu });
-            this.MainMenuStrip = mainMenu;
+            //mainMenu.Items.AddRange(new ToolStripItem[] { fileMenu, toolsMenu, helpMenu });
+            //this.MainMenuStrip = mainMenu;
+            //this.Controls.Add(mainMenu);
+
+
+            // ====== 自动生成的控件初始化（Designer标准格式） ======
+            this.mainMenu = new System.Windows.Forms.MenuStrip();
+            this.fileMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.plcConfigItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.uploadDataItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.exitItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolsMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.clearLogItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.helpMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.aboutItem = new System.Windows.Forms.ToolStripMenuItem();
+
+            // 设置菜单项文本和事件
+            this.fileMenu.Text = "文件(&F)";
+            this.plcConfigItem.Text = "PLC配置(&P)";
+            this.plcConfigItem.Click += (s, e) => this.ShowPLCConfigDialog();
+            this.uploadDataItem.Text = "数据上传配置(&U)";
+            this.uploadDataItem.Click += (s, e) => this.ShowUploadDataConfigDialog();
+
+            this.exitItem.Text = "退出(&X)";
+            this.exitItem.Click += (s, e) => Application.Exit();
+
+            this.toolsMenu.Text = "工具(&T)";
+            this.clearLogItem.Text = "清空日志(&C)";
+            this.clearLogItem.Click += new System.EventHandler(this.ClearLog);
+
+            this.helpMenu.Text = "帮助(&H)";
+            this.aboutItem.Text = "关于(&A)";
+            this.aboutItem.Click += (s, e) => this.ShowAboutDialog();
+
+            // 组装菜单结构（注意：不需要this.Controls.Add(mainMenu)！）
+            this.fileMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+                this.plcConfigItem,
+                this.uploadDataItem,
+                this.exitItem
+            });
+            this.toolsMenu.DropDownItems.Add(this.clearLogItem);
+            this.helpMenu.DropDownItems.Add(this.aboutItem);
+            this.mainMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+                this.fileMenu,
+                this.toolsMenu,
+                this.helpMenu
+            });
+
             this.Controls.Add(mainMenu);
+
         }
         private void ShowPLCConfigDialog()
         {
@@ -1334,8 +1419,6 @@ namespace CosmxMESClient
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
-
 
 
 
@@ -1507,6 +1590,16 @@ namespace CosmxMESClient
                 ShowErrorDialog($"停止连接失败: {ex.Message}");
             }
         }
+
+        #region 控件使能
+        private void EnableControl(bool isEnable)
+        {
+            plcConfigItem.Enabled = isEnable;
+            uploadDataItem.Enabled = isEnable;
+        }
+        #endregion
+
+
         #region  配置
         /// <summary>
         /// 简化的数据处理方法
@@ -1520,7 +1613,7 @@ namespace CosmxMESClient
             //        ProcessTemperature(e.Value);
             //        break;
             //    case "D101":
-                    ProcessPressure(e);
+            ProcessPressure(e);
             ProcessPressure1(e);
             //        break;
             //    default:
@@ -1545,7 +1638,7 @@ namespace CosmxMESClient
             //    // 压力处理逻辑
             //    AppendLog($"压力: {pressure}MPa");
             //}
-           var item= UploadDataConfigManager.GetConfig().UploadItems.FirstOrDefault(p => p.Value.BindPLCScanAddress.Address == value.Address).Value;
+            var item = UploadDataConfigManager.GetConfig().UploadItems.FirstOrDefault(p => p.Value.BindPLCScanAddress.Address == value.Address).Value;
             if (item != null)
             {
                 item.ParameterValue = value.Value.ToString();

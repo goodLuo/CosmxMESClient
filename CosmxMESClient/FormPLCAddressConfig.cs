@@ -352,16 +352,15 @@ namespace CosmxMESClient
             _currentAddress.Length = (int)numLength.Value;
             _currentAddress.IsEnabled = chkEnabled.Checked;
             // 保存数据类型
-            if (cmbDataType.SelectedItem is ComboBoxItem selectedItem)
+            if (Enum.TryParse(cmbDataType.SelectedItem.ToString(), out TypeCode result))
             {
-                if (Enum.TryParse(selectedItem.Text, out TypeCode result))
-                {
-                    cmbDataType.SelectedItem = result;
-                }
-                else
-                {
-                    cmbDataType.SelectedItem = TypeCode.Int16;
-                }
+                //cmbDataType.SelectedItem = result;
+                _currentAddress.DataType = result;
+            }
+            else
+            {
+                //cmbDataType.SelectedItem = TypeCode.String;
+                _currentAddress.DataType = TypeCode.Int16;
             }
 
             // 如果是发送地址，保存特有属性
@@ -449,8 +448,7 @@ namespace CosmxMESClient
         }
         private void btnAdd_Click(object sender, EventArgs e)
         {
-            if (!ValidateForm())
-                return;
+            if (!ValidateForm()) return;
 
             try
             {
