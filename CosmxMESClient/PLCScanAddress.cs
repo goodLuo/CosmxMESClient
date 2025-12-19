@@ -499,8 +499,14 @@ namespace CosmxMESClient
                     return Math.Abs(newNum - threshold) <= TriggerTolerance;
 
                 case TriggerCondition.GreaterThanOrEqual:
-                    reason = $"{newNum} >= {threshold}";
-                    return newNum >= threshold;
+                    //reason = $"{newNum} >= {threshold}";
+                    //return newNum >= threshold;
+                    // 当前值 >= 阈值 且 上一次值 < 阈值 (构成上升沿)
+                    bool isRising = newNum >= threshold && prevNum < threshold;
+                    reason = isRising
+                        ? $"{newNum} >= {threshold} (上升沿)"
+                        : $"{newNum} >= {threshold} 但旧值 {prevNum} 已满足 (忽略)";
+                    return isRising;
 
                 case TriggerCondition.LessThanOrEqual:
                     reason = $"{newNum} <= {threshold}";

@@ -681,6 +681,7 @@ namespace CosmxMESClient
                         if (address.TriggerCondition != TriggerCondition.None)
                         {
                             bool triggered = address.CheckTriggerConditionEnhanced(e.Value, address.LastValue).IsTriggered;
+                            address.LastValue = e.Value;
                             if (triggered)
                             {
                                 // 触发依赖此地址的所有扫描地址

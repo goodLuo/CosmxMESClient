@@ -30,6 +30,8 @@ namespace CosmxMESClient
         private readonly ConcurrentDictionary<string, Action<object>> _addressHandlers =
         new ConcurrentDictionary<string, Action<object>>();
 
+        private object _triggerLock = new object();
+
         protected virtual void OnDataRead(DataReadEventArgs e)
         {
             // 然后触发特定地址的处理逻辑
@@ -369,9 +371,17 @@ namespace CosmxMESClient
             if (dependent.TriggerCondition == TriggerCondition.None)
                 return true;
 
-            // 使用触发值来检查依赖地址的触发条件
-            var triggerResult = dependent.CheckTriggerConditionEnhanced(triggerValue, dependent.LastValue);
-            return triggerResult.IsTriggered;
+
+            lock (_triggerLock)
+            {
+                // 使用触发值来检查依赖地址的触发条件
+                var triggerResult = dependent.CheckTriggerConditionEnhanced(triggerValue, dependent.LastValue);
+                return triggerResult.IsTriggered;
+            }
+
+
+                
+            
         }
         /// <summary>
         /// 验证触发依赖关系
