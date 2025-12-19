@@ -24,13 +24,23 @@ namespace CosmxMESClient
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
             this.splitContainerMain = new System.Windows.Forms.SplitContainer();
             this.dgvUploadItems = new System.Windows.Forms.DataGridView();
+            this.colParameterName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colIsUpload = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.colDescription = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colType = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colIsNullable = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.colLength = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colFormatExample = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.PLCScanAddress = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.grpItemDetail = new System.Windows.Forms.GroupBox();
             this.txtParameterValue = new System.Windows.Forms.TextBox();
             this.txtLength = new System.Windows.Forms.TextBox();
+            this.cboPLCScanAddress = new System.Windows.Forms.ComboBox();
             this.cboType = new System.Windows.Forms.ComboBox();
             this.chkIsNullable = new System.Windows.Forms.CheckBox();
             this.txtDescription = new System.Windows.Forms.TextBox();
             this.chkIsUpload = new System.Windows.Forms.CheckBox();
+            this.label1 = new System.Windows.Forms.Label();
             this.txtParameterName = new System.Windows.Forms.TextBox();
             this.lblFormatExample = new System.Windows.Forms.Label();
             this.lblLength = new System.Windows.Forms.Label();
@@ -44,16 +54,6 @@ namespace CosmxMESClient
             this.btnImport = new System.Windows.Forms.Button();
             this.btnExport = new System.Windows.Forms.Button();
             this.btnSave = new System.Windows.Forms.Button();
-            this.label1 = new System.Windows.Forms.Label();
-            this.cboPLCScanAddress = new System.Windows.Forms.ComboBox();
-            this.colParameterName = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colIsUpload = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-            this.colDescription = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colType = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colIsNullable = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-            this.colLength = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colFormatExample = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.PLCScanAddress = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerMain)).BeginInit();
             this.splitContainerMain.Panel1.SuspendLayout();
             this.splitContainerMain.Panel2.SuspendLayout();
@@ -125,6 +125,78 @@ namespace CosmxMESClient
             this.dgvUploadItems.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dgvUploadItems.Size = new System.Drawing.Size(1009, 655);
             this.dgvUploadItems.TabIndex = 0;
+            this.dgvUploadItems.SelectionChanged += new System.EventHandler(this.DgvUploadItems_SelectionChanged);
+            // 
+            // colParameterName
+            // 
+            this.colParameterName.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            this.colParameterName.FillWeight = 109.3466F;
+            this.colParameterName.HeaderText = "参数名";
+            this.colParameterName.Name = "colParameterName";
+            this.colParameterName.ReadOnly = true;
+            this.colParameterName.Width = 180;
+            // 
+            // colIsUpload
+            // 
+            this.colIsUpload.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            this.colIsUpload.FillWeight = 62.96624F;
+            this.colIsUpload.HeaderText = "是否上传";
+            this.colIsUpload.Name = "colIsUpload";
+            this.colIsUpload.ReadOnly = true;
+            this.colIsUpload.Width = 52;
+            // 
+            // colDescription
+            // 
+            this.colDescription.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            this.colDescription.FillWeight = 158.972F;
+            this.colDescription.HeaderText = "参数描述";
+            this.colDescription.Name = "colDescription";
+            this.colDescription.ReadOnly = true;
+            this.colDescription.Width = 120;
+            // 
+            // colType
+            // 
+            this.colType.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            this.colType.FillWeight = 263.5349F;
+            this.colType.HeaderText = "参数类型";
+            this.colType.Name = "colType";
+            this.colType.ReadOnly = true;
+            this.colType.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.colType.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            // 
+            // colIsNullable
+            // 
+            this.colIsNullable.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            this.colIsNullable.FillWeight = 227.0126F;
+            this.colIsNullable.HeaderText = "是否可空";
+            this.colIsNullable.Name = "colIsNullable";
+            this.colIsNullable.ReadOnly = true;
+            this.colIsNullable.Width = 52;
+            // 
+            // colLength
+            // 
+            this.colLength.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            this.colLength.FillWeight = 9.752413F;
+            this.colLength.HeaderText = "长度";
+            this.colLength.Name = "colLength";
+            this.colLength.ReadOnly = true;
+            this.colLength.Width = 60;
+            // 
+            // colFormatExample
+            // 
+            this.colFormatExample.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            this.colFormatExample.FillWeight = 28.44379F;
+            this.colFormatExample.HeaderText = "参数值";
+            this.colFormatExample.Name = "colFormatExample";
+            this.colFormatExample.ReadOnly = true;
+            // 
+            // PLCScanAddress
+            // 
+            this.PLCScanAddress.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.PLCScanAddress.HeaderText = "PLC扫描地址";
+            this.PLCScanAddress.Name = "PLCScanAddress";
+            this.PLCScanAddress.ReadOnly = true;
+            this.PLCScanAddress.Resizable = System.Windows.Forms.DataGridViewTriState.True;
             // 
             // grpItemDetail
             // 
@@ -165,6 +237,15 @@ namespace CosmxMESClient
             this.txtLength.Size = new System.Drawing.Size(164, 21);
             this.txtLength.TabIndex = 10;
             // 
+            // cboPLCScanAddress
+            // 
+            this.cboPLCScanAddress.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cboPLCScanAddress.FormattingEnabled = true;
+            this.cboPLCScanAddress.Location = new System.Drawing.Point(101, 196);
+            this.cboPLCScanAddress.Name = "cboPLCScanAddress";
+            this.cboPLCScanAddress.Size = new System.Drawing.Size(164, 20);
+            this.cboPLCScanAddress.TabIndex = 9;
+            // 
             // cboType
             // 
             this.cboType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
@@ -200,6 +281,15 @@ namespace CosmxMESClient
             this.chkIsUpload.TabIndex = 6;
             this.chkIsUpload.Text = "是否上传";
             this.chkIsUpload.UseVisualStyleBackColor = true;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(15, 201);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(83, 12);
+            this.label1.TabIndex = 4;
+            this.label1.Text = "PLC扫描地址：";
             // 
             // txtParameterName
             // 
@@ -285,6 +375,7 @@ namespace CosmxMESClient
             this.btnAdd.TabIndex = 0;
             this.btnAdd.Text = "添加项";
             this.btnAdd.UseVisualStyleBackColor = true;
+            this.btnAdd.Click += new System.EventHandler(this.BtnAdd_Click);
             // 
             // btnDelete
             // 
@@ -294,6 +385,7 @@ namespace CosmxMESClient
             this.btnDelete.TabIndex = 1;
             this.btnDelete.Text = "删除项";
             this.btnDelete.UseVisualStyleBackColor = true;
+            this.btnDelete.Click += new System.EventHandler(this.BtnDelete_Click);
             // 
             // btnImport
             // 
@@ -303,6 +395,7 @@ namespace CosmxMESClient
             this.btnImport.TabIndex = 2;
             this.btnImport.Text = "导入配置";
             this.btnImport.UseVisualStyleBackColor = true;
+            this.btnImport.Click += new System.EventHandler(this.BtnImport_Click);
             // 
             // btnExport
             // 
@@ -312,6 +405,7 @@ namespace CosmxMESClient
             this.btnExport.TabIndex = 3;
             this.btnExport.Text = "导出配置";
             this.btnExport.UseVisualStyleBackColor = true;
+            this.btnExport.Click += new System.EventHandler(this.BtnExport_Click);
             // 
             // btnSave
             // 
@@ -321,95 +415,7 @@ namespace CosmxMESClient
             this.btnSave.TabIndex = 4;
             this.btnSave.Text = "保存配置";
             this.btnSave.UseVisualStyleBackColor = true;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(15, 201);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(83, 12);
-            this.label1.TabIndex = 4;
-            this.label1.Text = "PLC扫描地址：";
-            // 
-            // cboPLCScanAddress
-            // 
-            this.cboPLCScanAddress.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cboPLCScanAddress.FormattingEnabled = true;
-            this.cboPLCScanAddress.Location = new System.Drawing.Point(101, 196);
-            this.cboPLCScanAddress.Name = "cboPLCScanAddress";
-            this.cboPLCScanAddress.Size = new System.Drawing.Size(164, 20);
-            this.cboPLCScanAddress.TabIndex = 9;
-            // 
-            // colParameterName
-            // 
-            this.colParameterName.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            this.colParameterName.FillWeight = 109.3466F;
-            this.colParameterName.HeaderText = "参数名";
-            this.colParameterName.Name = "colParameterName";
-            this.colParameterName.ReadOnly = true;
-            this.colParameterName.Width = 180;
-            // 
-            // colIsUpload
-            // 
-            this.colIsUpload.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            this.colIsUpload.FillWeight = 62.96624F;
-            this.colIsUpload.HeaderText = "是否上传";
-            this.colIsUpload.Name = "colIsUpload";
-            this.colIsUpload.ReadOnly = true;
-            this.colIsUpload.Width = 52;
-            // 
-            // colDescription
-            // 
-            this.colDescription.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            this.colDescription.FillWeight = 158.972F;
-            this.colDescription.HeaderText = "参数描述";
-            this.colDescription.Name = "colDescription";
-            this.colDescription.ReadOnly = true;
-            this.colDescription.Width = 120;
-            // 
-            // colType
-            // 
-            this.colType.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            this.colType.FillWeight = 263.5349F;
-            this.colType.HeaderText = "参数类型";
-            this.colType.Name = "colType";
-            this.colType.ReadOnly = true;
-            this.colType.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.colType.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            // 
-            // colIsNullable
-            // 
-            this.colIsNullable.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            this.colIsNullable.FillWeight = 227.0126F;
-            this.colIsNullable.HeaderText = "是否可空";
-            this.colIsNullable.Name = "colIsNullable";
-            this.colIsNullable.ReadOnly = true;
-            this.colIsNullable.Width = 52;
-            // 
-            // colLength
-            // 
-            this.colLength.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            this.colLength.FillWeight = 9.752413F;
-            this.colLength.HeaderText = "长度";
-            this.colLength.Name = "colLength";
-            this.colLength.ReadOnly = true;
-            this.colLength.Width = 60;
-            // 
-            // colFormatExample
-            // 
-            this.colFormatExample.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            this.colFormatExample.FillWeight = 28.44379F;
-            this.colFormatExample.HeaderText = "参数值";
-            this.colFormatExample.Name = "colFormatExample";
-            this.colFormatExample.ReadOnly = true;
-            // 
-            // PLCScanAddress
-            // 
-            this.PLCScanAddress.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.PLCScanAddress.HeaderText = "PLC扫描地址";
-            this.PLCScanAddress.Name = "PLCScanAddress";
-            this.PLCScanAddress.ReadOnly = true;
-            this.PLCScanAddress.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.btnSave.Click += new System.EventHandler(this.BtnSave_Click);
             // 
             // FormUploadData
             // 

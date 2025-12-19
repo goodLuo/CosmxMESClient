@@ -63,7 +63,7 @@ namespace CosmxMESClient
             cmbByteOrder.DataSource = Enum.GetValues(typeof(ByteOrderEnum));
             cmbStringByteOrder.DataSource = Enum.GetValues(typeof(StringByteOrderEnum));
             LoadDefaultValues();
-            LoadSavedConfigs();
+            //LoadSavedConfigs();
             // 初始化地址列表的绑定源
             //_scanAddressesBindingSource.DataSource = typeof(BindingList<PLCScanAddress>);
             //_sendAddressesBindingSource.DataSource = typeof(BindingList<PLCSendAddress>);
@@ -75,6 +75,41 @@ namespace CosmxMESClient
             SetupDataGridViewDataBindings();
 
         }
+
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+
+            // 1. 临时挂起布局逻辑，防止闪烁
+            this.SuspendLayout();
+            tabControl.SuspendLayout();
+
+            // 2. 只有在 OnLoad 中，所有控件的 BindingContext 才真正准备好
+            // 我们强制切换一次 Tab，让隐藏的 Grid 真正“活”过来
+            // 假设 tabPageAddresses 是第二个页面，索引是 0 或 1，根据你的实际情况
+            // 你的设计器代码显示 tabPageAddresses 是第一个添加的，tabPageConfig 是第二个
+            // 但为了保险，我们两个都切一下
+            int originalIndex = tabControl.SelectedIndex;
+
+            // 强制切换到地址页，强制初始化
+            tabControl.SelectedTab = tabPageAddresses;
+            // 强制创建句柄（此时 BindingContext 已就绪，Handle 访问才有效）
+            var h1 = dgvScanAddresses.Handle;
+            var h2 = dgvSendAddresses.Handle;
+
+            // 切回原来的页面（通常是 Config 页）
+            tabControl.SelectedTab = tabPageConfig;
+
+            // 3. 现在再加载数据，此时所有的 Grid 都能听到数据源的变动了
+            LoadSavedConfigs();
+
+            // 4. 恢复布局
+            tabControl.ResumeLayout();
+            this.ResumeLayout();
+        }
+
+
+
         private void SetupDataGridViewDataBindings()
         {
             // 扫描地址DataGridView的数据绑定
@@ -264,7 +299,7 @@ namespace CosmxMESClient
         private void LoadSavedConfigs()
         {
             //var configs = PLCConfigManager.LoadConfigs();
-            _plcConfigs.Clear();
+            if(_plcConfigs.Count != 0) _plcConfigs.Clear();
 
             foreach (var config in GlobalVariables.PLCConnections)
             {

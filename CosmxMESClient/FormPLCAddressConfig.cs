@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -237,7 +238,7 @@ namespace CosmxMESClient
 
                     string TriggerAddress = scanAddress.TriggerCondition != TriggerCondition.None ?
                     "无条件" :
-                    scanAddress.TriggerPLCScanAddress==null? "无条件":scanAddress.TriggerPLCScanAddress.Key;
+                    scanAddress.TriggerPLCScanAddress == null ? "无条件" : scanAddress.TriggerPLCScanAddress.Key;
                     item.SubItems.Add(TriggerAddress);
                     // 设置行颜色
                     if (scanAddress.IsTriggered)
@@ -313,6 +314,7 @@ namespace CosmxMESClient
             // 手动加载数据到控件（不使用数据绑定）
             txtName.Text = _currentAddress.Key ?? "";
             txtAddress.Text = _currentAddress.Address ?? "";
+            cmbDataType.SelectedItem = _currentAddress.DataType.ToString();
             txtDescription.Text = _currentAddress.Description ?? "";
             numReadInterval.Value = _currentAddress.ReadInterval > 0 ? _currentAddress.ReadInterval : 1000;
             numPower.Value = _currentAddress.Power > 0 ? _currentAddress.Power : 1;
@@ -327,14 +329,13 @@ namespace CosmxMESClient
             }
             else if (_currentAddress is PLCScanAddress scanAddress)
             {
-
-
                 // 扫描地址：加载触发条件
                 cmbTriggerCondition.SelectedIndex = (int)scanAddress.TriggerCondition;
                 numTriggerThreshold.Value = (decimal)scanAddress.TriggerThreshold;
                 numTriggerDelay.Value = scanAddress.TriggerDelay;
                 chkTriggerRisingEdge.Checked = scanAddress.TriggerOnRisingEdge;
                 chkTriggerFallingEdge.Checked = scanAddress.TriggerOnFallingEdge;
+                cmbTriggerAddress.SelectedItem = scanAddress.TriggerPLCScanAddress?.Key.ToString();
 
             }
         }
@@ -553,9 +554,9 @@ namespace CosmxMESClient
                     bool success = false;
                     if (_currentDirection == AddressDirection.ReadOnly)
                     {
-                        var scan= address as PLCScanAddress;
+                        var scan = address as PLCScanAddress;
                         success = _currentConfig.ScanAddresses.Remove(scan);
-                     
+
                     }
                     else
                     {
@@ -805,7 +806,7 @@ namespace CosmxMESClient
 
                     case TypeCode.Double:
                         double doubleValue = 0;
-                        if (config.PLCInstance.ReadDouble(address.Address,  ref doubleValue, address.Power))
+                        if (config.PLCInstance.ReadDouble(address.Address, ref doubleValue, address.Power))
                             return doubleValue;
                         break;
 
@@ -834,7 +835,7 @@ namespace CosmxMESClient
 
                         case TypeCode.Int16:
                             int intValue = int.Parse(value);
-                            return config.PLCInstance.WriteRegister(address.Address, intValue,address.Power);
+                            return config.PLCInstance.WriteRegister(address.Address, intValue, address.Power);
 
                         case TypeCode.Int32:
                             int int32Value = int.Parse(value);
@@ -846,7 +847,7 @@ namespace CosmxMESClient
 
                         case TypeCode.Double:
                             double doubleValue = double.Parse(value);
-                            return config.PLCInstance.WriteDouble(address.Address,  doubleValue, address.Power);
+                            return config.PLCInstance.WriteDouble(address.Address, doubleValue, address.Power);
 
                         case TypeCode.String:
                             return config.PLCInstance.WriteString(address.Address, value);
@@ -893,7 +894,7 @@ namespace CosmxMESClient
                 return false;
             }
 
-            if(cmbTriggerAddress.SelectedItem != null)
+            if (cmbTriggerAddress.SelectedItem != null)
             {
                 string triggerKey = cmbTriggerAddress.SelectedItem.ToString();
                 string dependentKey = _currentAddress.Key;
@@ -908,7 +909,7 @@ namespace CosmxMESClient
                     return false;
                 }
             }
-            
+
 
 
             if (cmbDataType.SelectedItem == null)
@@ -1014,5 +1015,319 @@ namespace CosmxMESClient
         {
             RefreshAddress();
         }
+
+
+        #region 配置导入导出
+        /// <summary>
+        /// 导出配置
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btnExportCsv_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                using (SaveFileDialog sfd = new SaveFileDialog())
+                {
+                    sfd.Filter = "CSV 文件 (*.csv)|*.csv";
+                    sfd.FileName = $"{_currentConfig.Name}_{GetDirectionDisplayName()}地址.csv";
+                    sfd.Title = "导出地址配置为 CSV";
+
+                    if (sfd.ShowDialog() == DialogResult.OK)
+                    {
+                        var sb = new StringBuilder();
+
+                        // 1. 写入表头 (新增第15列：TriggerAddressKey)
+                        sb.AppendLine("Key,Address,DataType,Description,ReadInterval,IsEnabled,Power,Length,AutoSend,SendDelay,TriggerCondition,TriggerThreshold,TriggerDelay,TriggerRising,TriggerFalling,TriggerAddressKey");
+
+                        // 2. 获取数据源
+                        var addresses = _currentDirection == AddressDirection.ReadOnly
+                            ? _currentConfig.ScanAddresses.Cast<PLCAddressConfig>()
+                            : _currentConfig.SendAddresses.Cast<PLCAddressConfig>();
+
+                        foreach (var addr in addresses.OrderBy(a => a.Key))
+                        {
+                            // 准备基础数据
+                            var values = new List<string>
+                    {
+                        EscapeCsv(addr.Key ?? ""),
+                        EscapeCsv(addr.Address ?? ""),
+                        addr.DataType.ToString(),
+                        EscapeCsv(addr.Description ?? ""),
+                        addr.ReadInterval.ToString(),
+                        addr.IsEnabled.ToString(),
+                        addr.Power.ToString(),
+                        addr.Length.ToString()
+                    };
+
+                            // 准备特有数据
+                            string autoSend = "";
+                            string sendDelay = "";
+                            string trigCond = "";
+                            string trigThresh = "";
+                            string trigDelay = "";
+                            string trigRise = "";
+                            string trigFall = "";
+                            string trigKey = ""; // 触发地址的Key
+
+                            if (addr is PLCSendAddress sendAddr)
+                            {
+                                autoSend = sendAddr.AutoSend.ToString();
+                                sendDelay = sendAddr.SendDelay.ToString();
+                            }
+                            else if (addr is PLCScanAddress scanAddr)
+                            {
+                                trigCond = scanAddr.TriggerCondition.ToString();
+                                trigThresh = scanAddr.TriggerThreshold.ToString();
+                                trigDelay = scanAddr.TriggerDelay.ToString();
+                                trigRise = scanAddr.TriggerOnRisingEdge.ToString();
+                                trigFall = scanAddr.TriggerOnFallingEdge.ToString();
+
+                                // 获取触发依赖地址的Key
+                                if (scanAddr.TriggerPLCScanAddress != null)
+                                {
+                                    trigKey = scanAddr.TriggerPLCScanAddress.Key;
+                                }
+                            }
+
+                            // 添加发送地址特有列
+                            values.Add(autoSend);
+                            values.Add(sendDelay);
+
+                            // 添加扫描地址特有列
+                            values.Add(trigCond);
+                            values.Add(trigThresh);
+                            values.Add(trigDelay);
+                            values.Add(trigRise);
+                            values.Add(trigFall);
+                            values.Add(EscapeCsv(trigKey)); // 第15列
+
+                            sb.AppendLine(string.Join(",", values));
+                        }
+
+                        File.WriteAllText(sfd.FileName, sb.ToString(), Encoding.UTF8);
+                        LoggingService.Info($"成功导出 CSV: {sfd.FileName}");
+                        MessageBox.Show("导出成功！", "成功", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Error("导出数据异常", ex);
+                MessageBox.Show($"导出失败: {ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>
+        /// 导入配置
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btnImportCsv_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog ofd = new OpenFileDialog())
+            {
+                ofd.Filter = "CSV 文件 (*.csv)|*.csv";
+                ofd.Title = "导入地址配置 CSV";
+
+                if (ofd.ShowDialog() == DialogResult.OK)
+                {
+                    try
+                    {
+                        var lines = File.ReadAllLines(ofd.FileName, Encoding.UTF8);
+                        if (lines.Length <= 1)
+                        {
+                            MessageBox.Show("文件内容为空。", "提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            return;
+                        }
+
+                        string message = $"将导入 {lines.Length - 1} 条配置。\n" +
+                                         $"警告：将覆盖当前方向的所有地址！\n是否继续？";
+
+                        if (MessageBox.Show(message, "确认覆盖", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+                        {
+                            ImportAddressesFromCsv(lines);
+                            LoadAddresses(); // 刷新UI列表
+                            RefreshAddress(); // 刷新触发下拉框的数据源
+                            ResetForm(); // 重置编辑区域
+                            MessageBox.Show("导入成功！", "成功", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LoggingService.Error("导入CSV失败", ex);
+                        MessageBox.Show($"导入失败：{ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+        }
+
+        
+        private void ImportAddressesFromCsv(string[] lines)
+        {
+            // 1. 清空当前方向的所有地址
+            if (_currentDirection == AddressDirection.ReadOnly)
+            {
+                _currentConfig.ScanAddresses.Clear();
+            }
+            else
+            {
+                _currentConfig.SendAddresses.Clear();
+            }
+
+            // 用于暂存 "当前地址对象" -> "目标触发地址Key" 的映射关系
+            // 因为读取第一行时，被依赖的地址可能还在文件的最后一行没被创建出来
+            var pendingTriggerLinks = new Dictionary<PLCScanAddress, string>();
+
+            // 2. 逐行解析 (跳过表头 i=1)
+            for (int i = 1; i < lines.Length; i++)
+            {
+                var line = lines[i].Trim();
+                if (string.IsNullOrWhiteSpace(line)) continue;
+
+                var fields = ParseCsvLine(line);
+
+                // 确保至少有基础字段
+                if (fields.Length < 8) continue;
+
+                PLCAddressConfig newAddr;
+
+                if (_currentDirection == AddressDirection.ReadOnly)
+                {
+                    var scanAddr = new PLCScanAddress();
+
+                    // 读取触发条件列 (索引 10-14)
+                    if (fields.Length > 10 && Enum.TryParse(fields[10], out TriggerCondition tc))
+                        scanAddr.TriggerCondition = tc;
+                    if (fields.Length > 11 && double.TryParse(fields[11], out double tt))
+                        scanAddr.TriggerThreshold = tt;
+                    if (fields.Length > 12 && int.TryParse(fields[12], out int td))
+                        scanAddr.TriggerDelay = td;
+                    if (fields.Length > 13 && bool.TryParse(fields[13], out bool tr))
+                        scanAddr.TriggerOnRisingEdge = tr;
+                    if (fields.Length > 14 && bool.TryParse(fields[14], out bool tf))
+                        scanAddr.TriggerOnFallingEdge = tf;
+
+                    // **关键：读取触发地址Key并暂存 (索引 15)**
+                    if (fields.Length > 15 && !string.IsNullOrWhiteSpace(fields[15]))
+                    {
+                        pendingTriggerLinks.Add(scanAddr, fields[15]);
+                    }
+
+                    newAddr = scanAddr;
+                }
+                else
+                {
+                    var sendAddr = new PLCSendAddress();
+                    if (fields.Length > 8 && bool.TryParse(fields[8], out bool auto))
+                        sendAddr.AutoSend = auto;
+                    if (fields.Length > 9 && int.TryParse(fields[9], out int sDelay))
+                        sendAddr.SendDelay = sDelay;
+                    newAddr = sendAddr;
+                }
+
+                // 填充基础属性
+                newAddr.Key = fields[0];
+                newAddr.Address = fields[1];
+                if (Enum.TryParse(fields[2], out TypeCode typeCode)) newAddr.DataType = typeCode;
+                else newAddr.DataType = TypeCode.Int16;
+                newAddr.Description = fields[3];
+                if (int.TryParse(fields[4], out int interval)) newAddr.ReadInterval = interval;
+                if (bool.TryParse(fields[5], out bool enabled)) newAddr.IsEnabled = enabled;
+                if (int.TryParse(fields[6], out int power)) newAddr.Power = power;
+                if (int.TryParse(fields[7], out int len)) newAddr.Length = len;
+
+                // 添加到集合
+                if (_currentDirection == AddressDirection.ReadOnly)
+                    _currentConfig.AddScanAddress(newAddr as PLCScanAddress);
+                else
+                    _currentConfig.AddSendAddress(newAddr as PLCSendAddress);
+            }
+
+            // 3. 第二遍扫描：解析触发地址绑定
+            // 此时所有 ScanAddresses 都已经创建并在列表中了
+            if (_currentDirection == AddressDirection.ReadOnly && pendingTriggerLinks.Count > 0)
+            {
+                foreach (var kvp in pendingTriggerLinks)
+                {
+                    PLCScanAddress currentAddr = kvp.Key;
+                    string targetKey = kvp.Value;
+
+                    // 在当前配置列表中查找目标Key
+                    // 注意：这里假设触发地址必须在同一个配置组中
+                    var targetAddr = _currentConfig.ScanAddresses
+                        .FirstOrDefault(a => a.Key == targetKey);
+
+                    if (targetAddr != null)
+                    {
+                        currentAddr.TriggerPLCScanAddress = targetAddr;
+                        currentAddr.IsTriggerDependent = true; // 通常绑定了触发地址就意味着它是依赖项
+                    }
+                    else
+                    {
+                        LoggingService.Warn($"导入警告：地址 '{currentAddr.Key}' 依赖的触发地址 '{targetKey}' 未找到。");
+                    }
+                }
+            }
+        }
+
+
+        #region 辅助方法
+        private string EscapeCsv(string value)
+        {
+            if (value.Contains(',') || value.Contains('"') || value.Contains('\n'))
+            {
+                value = value.Replace("\"", "\"\"");
+                return $"\"{value}\"";
+            }
+            return value;
+        }
+
+        /// <summary>
+        /// 简单解析带引号的 CSV 行（支持字段内包含逗号）
+        /// </summary>
+        private string[] ParseCsvLine(string line)
+        {
+            var result = new List<string>();
+            var sb = new StringBuilder();
+            bool inQuotes = false;
+
+            for (int i = 0; i < line.Length; i++)
+            {
+                char c = line[i];
+
+                if (c == '"')
+                {
+                    if (inQuotes && i + 1 < line.Length && line[i + 1] == '"')
+                    {
+                        sb.Append('"');
+                        i++; // 跳过转义的第二个引号
+                    }
+                    else
+                    {
+                        inQuotes = !inQuotes;
+                    }
+                }
+                else if (c == ',' && !inQuotes)
+                {
+                    result.Add(sb.ToString().Trim());
+                    sb.Clear();
+                }
+                else
+                {
+                    sb.Append(c);
+                }
+            }
+
+            result.Add(sb.ToString().Trim());
+            return result.ToArray();
+        }
+        #endregion
+
+
+
+        #endregion
+
+
     }
 }

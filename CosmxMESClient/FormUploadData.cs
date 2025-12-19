@@ -30,12 +30,6 @@ namespace CosmxMESClient
             cboType.DataSource = Enum.GetValues(typeof(ParameterType));
 
             // 事件
-            dgvUploadItems.SelectionChanged += DgvUploadItems_SelectionChanged;
-            btnAdd.Click += BtnAdd_Click;
-            btnDelete.Click += BtnDelete_Click;
-            btnImport.Click += BtnImport_Click;
-            btnExport.Click += BtnExport_Click;
-            btnSave.Click += BtnSave_Click;
             cboPLCScanAddress.SelectedIndexChanged += new System.EventHandler(this.cboPLCScanAddress_SelectedIndexChanged);
 
             // 加载配置
@@ -51,7 +45,7 @@ namespace CosmxMESClient
                 {
                     cboPLCScanAddress.Items.Add(item.Value.Key + "|" + item.Value.Description);
                     _cachePLCScanAddress[item.Value.Key] = item.Value.Key + "|" + item.Value.Description;
-                } 
+                }
             }));
 
 
@@ -92,7 +86,7 @@ namespace CosmxMESClient
                     }
                     length = len;
                 }
-               
+
                 dict[name] = new UploadItem
                 {
                     ParameterName = name,
@@ -103,8 +97,8 @@ namespace CosmxMESClient
                     Length = length,
                     ParameterValue = Convert.ToString(row.Cells[colFormatExample.Name].Value),
                     PLCScanAddressKey = Convert.ToString(row.Cells[PLCScanAddress.Name].Value),
-                    BindPLCScanAddress = (GlobalVariables.AllAvailableTriggerAddresses.FirstOrDefault(p => p.Key == row.Cells[PLCScanAddress.Name].Value.ToString().Split('|')[0]).Value) == null ? 
-                    null : 
+                    BindPLCScanAddress = (GlobalVariables.AllAvailableTriggerAddresses.FirstOrDefault(p => p.Key == row.Cells[PLCScanAddress.Name].Value.ToString().Split('|')[0]).Value) == null ?
+                    null :
                     (GlobalVariables.AllAvailableTriggerAddresses.FirstOrDefault
                     (p => p.Key == row.Cells[PLCScanAddress.Name].Value.ToString().Split('|')[0]).Value)
                 };
@@ -156,7 +150,7 @@ namespace CosmxMESClient
             chkIsNullable.Checked = Convert.ToBoolean(row.Cells[colIsNullable.Name].Value ?? false);
             txtLength.Text = Convert.ToString(row.Cells[colLength.Name].Value);
             txtParameterValue.Text = Convert.ToString(row.Cells[colFormatExample.Name].Value);
-           // var cc= _cachePLCScanAddress.FirstOrDefault(p => p.Value.Contains(row.Cells[PLCScanAddress.Name].Value.ToString())).Value;
+            // var cc= _cachePLCScanAddress.FirstOrDefault(p => p.Value.Contains(row.Cells[PLCScanAddress.Name].Value.ToString())).Value;
             cboPLCScanAddress.Text = _cachePLCScanAddress.FirstOrDefault(p => p.Value.Contains(row.Cells[PLCScanAddress.Name].Value.ToString())).Value;
 
             //cboPLCScanAddress.SelectedValue = (cboPLCScanAddress.Items.GetEnumerator()).;//. FirstOrDefault(p=>p.Key.Contains(row.Cells[PLCScanAddress.Name].Value.ToString()));
@@ -203,9 +197,14 @@ namespace CosmxMESClient
                 cboType.SelectedItem,
                 chkIsNullable.Checked,
                 txtLength.Text.Trim(),
-                txtParameterValue.Text.Trim());
+                txtParameterValue.Text.Trim(),
+                cboPLCScanAddress.Text.Trim()
+                );
 
             dgvUploadItems.CurrentCell = dgvUploadItems.Rows[rowIndex].Cells[0];
+            DgvUploadItems_SelectionChanged(sender, e);
+
+
         }
 
         private void BtnDelete_Click(object sender, EventArgs e)
@@ -222,7 +221,7 @@ namespace CosmxMESClient
         {
             if (dgvUploadItems.CurrentRow != null)
             {
-                ApplyDetailToCurrentRow();
+                if (!ApplyDetailToCurrentRow()) return;
             }
 
             if (!UIToConfig()) return;
@@ -262,9 +261,9 @@ namespace CosmxMESClient
         #endregion
 
         #region 成员
-        private void ApplyDetailToCurrentRow()
+        private bool ApplyDetailToCurrentRow()
         {
-            if (dgvUploadItems.CurrentRow == null) return;
+            if (dgvUploadItems.CurrentRow == null) return false;
 
             var row = dgvUploadItems.CurrentRow;
 
@@ -272,7 +271,7 @@ namespace CosmxMESClient
             if (string.IsNullOrEmpty(newName))
             {
                 MessageBox.Show("参数名不能为空", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
+                return false;
             }
 
             foreach (DataGridViewRow r in dgvUploadItems.Rows)
@@ -281,7 +280,7 @@ namespace CosmxMESClient
                 if (Convert.ToString(r.Cells[colParameterName.Name].Value)?.Trim() == newName)
                 {
                     MessageBox.Show($"参数名已存在：{newName}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
+                    return false;
                 }
             }
 
@@ -293,6 +292,8 @@ namespace CosmxMESClient
             row.Cells[colLength.Name].Value = txtLength.Text.Trim();
             row.Cells[colFormatExample.Name].Value = txtParameterValue.Text.Trim();
             row.Cells[PLCScanAddress.Name].Value = cboPLCScanAddress.Text.Trim();
+
+            return true;
         }
         #endregion
 
@@ -409,7 +410,6 @@ namespace CosmxMESClient
         {
             var row = dgvUploadItems.CurrentRow;
             row.Cells[PLCScanAddress.Name].Value = cboPLCScanAddress.Text.Trim();
-            
         }
     }
 }

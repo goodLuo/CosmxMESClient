@@ -92,6 +92,8 @@
             this.grpActions = new System.Windows.Forms.GroupBox();
             this.btnDelete = new System.Windows.Forms.Button();
             this.btnEdit = new System.Windows.Forms.Button();
+            this.btnImportCsv = new System.Windows.Forms.Button();
+            this.btnExportCsv = new System.Windows.Forms.Button();
             this.btnAdd = new System.Windows.Forms.Button();
             this.grpFormActions = new System.Windows.Forms.GroupBox();
             this.btnClose = new System.Windows.Forms.Button();
@@ -842,6 +844,8 @@
             // 
             this.grpActions.Controls.Add(this.btnDelete);
             this.grpActions.Controls.Add(this.btnEdit);
+            this.grpActions.Controls.Add(this.btnImportCsv);
+            this.grpActions.Controls.Add(this.btnExportCsv);
             this.grpActions.Controls.Add(this.btnAdd);
             this.grpActions.Dock = System.Windows.Forms.DockStyle.Fill;
             this.grpActions.Location = new System.Drawing.Point(3, 351);
@@ -874,6 +878,28 @@
             this.toolTip.SetToolTip(this.btnEdit, "编辑选中的地址配置");
             this.btnEdit.UseVisualStyleBackColor = false;
             this.btnEdit.Click += new System.EventHandler(this.btnEdit_Click);
+            // 
+            // btnImportCsv
+            // 
+            this.btnImportCsv.BackColor = System.Drawing.Color.LightGreen;
+            this.btnImportCsv.Location = new System.Drawing.Point(1217, 18);
+            this.btnImportCsv.Name = "btnImportCsv";
+            this.btnImportCsv.Size = new System.Drawing.Size(121, 30);
+            this.btnImportCsv.TabIndex = 0;
+            this.btnImportCsv.Text = "导入数据(CSV)";
+            this.btnImportCsv.UseVisualStyleBackColor = false;
+            this.btnImportCsv.Click += new System.EventHandler(this.btnImportCsv_Click);
+            // 
+            // btnExportCsv
+            // 
+            this.btnExportCsv.BackColor = System.Drawing.Color.LightGreen;
+            this.btnExportCsv.Location = new System.Drawing.Point(1346, 18);
+            this.btnExportCsv.Name = "btnExportCsv";
+            this.btnExportCsv.Size = new System.Drawing.Size(121, 30);
+            this.btnExportCsv.TabIndex = 0;
+            this.btnExportCsv.Text = "导出数据(CSV)";
+            this.btnExportCsv.UseVisualStyleBackColor = false;
+            this.btnExportCsv.Click += new System.EventHandler(this.btnExportCsv_Click);
             // 
             // btnAdd
             // 
@@ -1077,5 +1103,7 @@
         private System.Windows.Forms.Label lblConsecutiveCount;
         private System.Windows.Forms.Label lblStringThreshold;
         private System.Windows.Forms.Label lblCooldownSeconds;
-        }
+        private System.Windows.Forms.Button btnImportCsv;
+        private System.Windows.Forms.Button btnExportCsv;
+    }
     }
